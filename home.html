@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VerifyIt Nigeria — Verify News</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg-tertiary);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .user-profile:hover {
+      background: var(--bg-secondary);
+    }
+    .user-profile-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      margin-top: 0.5rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      min-width: 200px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      display: none;
+    }
+    .user-profile-dropdown.show {
+      display: block;
+    }
+    .dropdown-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      color: var(--text-primary);
+      text-decoration: none;
+      display: block;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .dropdown-item:hover {
+      background: var(--bg-tertiary);
+    }
+    .dropdown-item:last-child {
+      border-bottom: none;
+    }
+    .dropdown-item.logout {
+      color: #ef4444;
+    }
+    .dropdown-item.logout:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .navbar-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .user-actions-wrapper {
+      position: relative;
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar" id="navbar">
+    <div class="container">
+      <a href="home.html" class="navbar-brand">
+        <div class="brand-icon">✓</div>
+        Verify<span class="brand-accent">It</span>
+      </a>
+
+      <ul class="navbar-links" id="navLinks">
+        <li><a href="home.html" class="active">Verify</a></li>
+        <li><a href="about.html">About</a></li>
+      </ul>
+
+      <div class="navbar-actions">
+        <div class="theme-selector" id="themeSelector">
+          <div class="theme-dot active" data-theme="dark" title="Dark">🌑</div>
+          <div class="theme-dot" data-theme="light" title="Light">☀️</div>
+          <div class="theme-dot" data-theme="ocean" title="Ocean">🌊</div>
+          <div class="theme-dot" data-theme="forest" title="Forest">🌲</div>
+          <div class="theme-dot" data-theme="cream" title="Cream">🧁</div>
+        </div>
+        <div class="language-selector">
+          <select id="languageSelect" aria-label="Choose language">
+            <option value="en">EN</option>
+            <option value="yo">YOR</option>
+            <option value="ha">HAU</option>
+            <option value="ig">IBO</option>
+          </select>
+        </div>
+        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Verification History">📋</button>
+        
+        <!-- User Profile Dropdown -->
+        <div class="user-actions-wrapper">
+          <div class="user-profile" id="userProfile">
+            <div class="user-avatar" id="userAvatar">U</div>
+            <span id="userName">User</span>
+          </div>
+          <div class="user-profile-dropdown" id="userDropdown">
+            <div class="dropdown-item" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'">🧠 Admin Dashboard</div>
+            <div class="dropdown-item" id="profileLink">👤 Profile</div>
+            <div class="dropdown-item" id="settingsLink">⚙️ Settings</div>
+            <div class="dropdown-item logout" id="logoutBtn" onclick="logout()">🚪 Logout</div>
+          </div>
+        </div>
+
+        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-badge" data-i18n="hero_badge">
+          <span class="pulse-dot"></span>
+          AI-Powered Verification
+        </div>
+        <h1 data-i18n="hero_heading">Detect Fake News<br>with <span class="gradient-text">VerifyIt Nigeria</span></h1>
+        <p data-i18n="hero_paragraph">Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.</p>
+        <div class="hero-buttons">
+          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Verifying ↓</a>
+          <a href="#trending" class="btn btn-secondary btn-lg" data-i18n="hero_trending">Trending News</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="stat-value">97.3%</div>
+            <div class="stat-label">Accuracy Rate</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-value">3</div>
+            <div class="stat-label">AI Models</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-value"><5s</div>
+            <div class="stat-label">Avg. Response</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Verify Section -->
+  <section class="verify-section" id="verify">
+    <div class="container">
+      <h2 class="section-title" data-i18n="verify_title">Verify Your <span class="gradient-text">Content</span></h2>
+      <p class="section-subtitle" data-i18n="verify_subtitle">Choose your verification method below and get instant results.</p>
+
+      <div class="verify-grid">
+        <!-- Text Verification Card -->
+        <div class="verify-card">
+          <div class="card-header">
+            <div class="card-icon">📝</div>
+            <div>
+              <div class="card-title" data-i18n="text_card_title">Text Verification</div>
+              <div class="card-desc" data-i18n="text_card_desc">Paste an article or claim to analyze</div>
+            </div>
+          </div>
+
+          <textarea
+            class="verify-textarea"
+            id="textInput"
+            placeholder="Paste the news article, headline, or claim you want to verify..."
+            maxlength="5000"
+          ></textarea>
+          <div class="char-count"><span id="charCount">0</span>/5000</div>
+
+          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+            <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
+              🔍 Verify Text
+            </button>
+            <button class="btn btn-ghost" onclick="clearText()">Clear</button>
+          </div>
+
+          <!-- Text Results -->
+          <div id="textResults"></div>
+        </div>
+
+        <!-- URL Verification Card -->
+        <div class="verify-card">
+          <div class="card-header">
+            <div class="card-icon">🔗</div>
+            <div>
+              <div class="card-title" data-i18n="url_card_title">URL Verification</div>
+              <div class="card-desc" data-i18n="url_card_desc">Enter a news article URL to analyze</div>
+            </div>
+          </div>
+
+          <input
+            type="url"
+            class="verify-input"
+            id="urlInput"
+            placeholder="https://example.com/news-article"
+            maxlength="2000"
+          >
+
+          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+            <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
+              🔍 Verify URL
+            </button>
+            <button class="btn btn-ghost" onclick="clearUrl()">Clear</button>
+          </div>
+
+          <!-- URL Results -->
+          <div id="urlResults"></div>
+        </div>
+
+        <!-- Image Verification Card -->
+        <div class="verify-card">
+          <div class="card-header">
+            <div class="card-icon">🖼️</div>
+            <div>
+              <div class="card-title" data-i18n="image_card_title">Image Verification</div>
+              <div class="card-desc" data-i18n="image_card_desc">Upload a screenshot or news image</div>
+            </div>
+          </div>
+
+          <div class="image-upload-zone" id="imageUploadZone">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">Drop an image here or click to upload</div>
+            <div class="upload-hint">Supports JPG, PNG, WEBP (max 10MB)</div>
+            <input type="file" id="imageInput" accept="image/*" style="display: none;">
+          </div>
+
+          <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
+            <img id="imagePreview" src="" alt="Preview">
+            <button class="remove-image-btn" onclick="removeImage()">✕</button>
+          </div>
+
+          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+            <button class="btn btn-primary" id="verifyImageBtn" onclick="verifyImage()">
+              🔍 Verify Image
+            </button>
+            <button class="btn btn-ghost" onclick="extractTextFromImage()">
+              📄 Extract Text First
+            </button>
+          </div>
+
+          <!-- Image Results -->
+          <div id="imageResults"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="feature-section">
+    <div class="container">
+      <div class="section-header feature-header">
+        <div>
+          <h2 class="section-title" data-i18n="deepfake_section_title">Deepfake Detection</h2>
+          <p class="section-subtitle" data-i18n="deepfake_section_subtitle">Upload audio or video for synthetic media analysis.</p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card deepfake-card">
+          <div class="feature-card-icon">🎥</div>
+          <h3 data-i18n="deepfake_card_title">Deepfake Media Detector</h3>
+          <p data-i18n="deepfake_card_desc">Upload audio or video to detect synthetic media and get AI explanations.</p>
+          <div class="deepfake-controls">
+            <input type="file" id="deepfakeFileInput" accept="audio/*,video/*" style="display: none;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('deepfakeFileInput').click()" data-i18n="deepfake_button">Upload Media</button>
+            <div class="deepfake-selected" id="deepfakeFileSelected" data-i18n="deepfake_input_placeholder">No file selected</div>
+            <button type="button" class="btn btn-primary btn-sm" onclick="verifyDeepfake()" data-i18n="deepfake_detect_btn">🔍 Detect Deepfake</button>
+          </div>
+          <div id="deepfakeResults"></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Learn & Share Section -->
+  <section class="feature-section">
+    <div class="container">
+      <div class="section-header feature-header">
+        <div>
+          <h2 class="section-title" data-i18n="play_learn_title">Play and Share</h2>
+          <p class="section-subtitle" data-i18n="play_learn_subtitle">Improve your fact-checking skills and report suspicious news with WhatsApp.</p>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-card-icon">🧠</div>
+          <h3 data-i18n="quiz_title">Fake News Quiz</h3>
+          <p data-i18n="quiz_desc">Challenge yourself with short quiz questions to spot misinformation.</p>
+          <button type="button" class="btn btn-secondary" id="quizToggleBtn" onclick="toggleQuiz()" data-i18n="start_quiz_btn">Start Quiz</button>
+        </article>
+
+        <article class="feature-card whatsapp-card">
+          <div class="feature-card-icon">💬</div>
+          <h3 data-i18n="whatsapp_title">WhatsApp Verification Helper</h3>
+          <p data-i18n="whatsapp_desc">Generate a ready-made WhatsApp message to report or verify suspicious claims.</p>
+          <textarea id="whatsappClaimInput" class="verify-input" rows="4" placeholder="Paste the claim or headline you want to verify..." data-i18n-placeholder="whatsapp_input_placeholder"></textarea>
+          <div class="whatsapp-actions">
+            <button class="btn btn-primary btn-sm" onclick="generateWhatsAppShare()" data-i18n="whatsapp_generate">Generate Message</button>
+            <button class="btn btn-ghost btn-sm" onclick="copyWhatsAppMessage()" data-i18n="whatsapp_copy">Copy Message</button>
+          </div>
+          <div class="whatsapp-output" id="whatsappMessageOutput">&nbsp;</div>
+          <a id="whatsappShareLink" class="btn btn-secondary btn-sm" href="#" target="_blank" rel="noopener" onclick="openWhatsApp(); return false;" data-i18n="whatsapp_open">Open WhatsApp</a>
+        </article>
+
+        <article class="feature-card language-card">
+          <div class="feature-card-icon">🌍</div>
+          <h3 data-i18n="language_title">Local Language Support</h3>
+          <p data-i18n="language_desc">Switch to Yoruba, Hausa, or Igbo for a more comfortable verification experience.</p>
+          <div class="language-summary" data-i18n="language_info">Use the selector above to choose your local language.</div>
+        </article>
+      </div>
+
+      <div id="quizWidget" class="quiz-widget hidden">
+        <div class="quiz-header">
+          <div>
+            <h3 id="quizTitle">Fake News Quiz</h3>
+            <p id="quizProgress">Question 1 of 5</p>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="toggleQuiz()">Close</button>
+        </div>
+        <div class="quiz-body" id="quizBody"></div>
+        <div class="quiz-footer">
+          <button type="button" class="btn btn-secondary btn-sm" id="quizNextBtn" onclick="quizNext()">Next Question</button>
+          <button type="button" class="btn btn-primary btn-sm hidden" id="quizRestartBtn" onclick="resetQuiz()">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trending News Section -->
+  <section class="trending-section" id="trending">
+    <div class="container">
+      <div class="trending-header">
+        <div>
+          <h2 class="section-title">Trending <span class="gradient-text">News</span></h2>
+          <p class="section-subtitle">Latest headlines from verified sources</p>
+        </div>
+        <div class="category-filters" id="categoryFilters">
+          <button class="category-btn active" data-category="all">All</button>
+          <button class="category-btn" data-category="politics">Politics</button>
+          <button class="category-btn" data-category="technology">Technology</button>
+          <button class="category-btn" data-category="health">Health</button>
+          <button class="category-btn" data-category="science">Science</button>
+          <button class="category-btn" data-category="business">Business</button>
+        </div>
+      </div>
+
+      <div class="news-grid" id="newsGrid">
+        <!-- Populated by JS -->
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text">Loading trending news...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Section -->
+  <section class="faq-section">
+    <div class="container">
+      <h2 class="section-title" style="text-align:center;">Frequently Asked <span class="gradient-text">Questions</span></h2>
+      <p class="section-subtitle" style="margin: 0 auto;">Everything you need to know about VerifyIt</p>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How does VerifyIt detect fake news?
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">
+              VerifyIt Nigeria uses a multi-model approach combining BERT-based natural language processing, large language model analysis via Groq, and real-time web search verification with a focus on Nigerian news sources. The BERT model evaluates linguistic patterns, the LLM provides contextual reasoning with Nigerian context, and web search cross-references claims against trusted Nigerian and international sources. These scores are weighted and combined for a final credibility rating.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            How accurate is the verification?
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">
+              Our multi-model approach achieves approximately 97% accuracy on known datasets. However, no automated system is perfect — we recommend using VerifyIt as a tool to guide your judgment, not as an absolute truth detector. Always cross-reference important claims with multiple trusted sources.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            What does the credibility score mean?
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">
+              The credibility score ranges from 0 to 100. A score above 70 suggests the content is likely credible, 40-70 indicates uncertainty or mixed signals, and below 40 suggests the content may be unreliable or misleading. The score factors in BERT analysis (25%), LLM reasoning (35%), and web verification (40%).
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Is my data stored or shared?
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">
+              No. VerifyIt processes your text in real-time and does not store your input on our servers. Verification history is saved locally in your browser using localStorage and is never transmitted externally. You can clear your history at any time.
+            </div>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" onclick="toggleFaq(this)">
+            Can I verify images and screenshots?
+            <span class="faq-toggle">+</span>
+          </button>
+          <div class="faq-answer">
+            <div class="faq-answer-inner">
+              Yes! VerifyIt supports image verification using OCR (Optical Character Recognition) to extract text from screenshots, and Gemini Vision AI to analyze image content directly. Simply upload a screenshot of a news article, social media post, or any image containing text, and our AI will analyze it.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <span>Verify</span><span class="brand-accent">It</span>
+        </div>
+        <div class="footer-text">© 2025 VerifyIt Nigeria. AI-Powered Fake News Detection for Nigeria.</div>
+        <div class="footer-links">
+          <a href="about.html">About</a>
+          <a href="home.html">Verify</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- History Sidebar -->
+  <div class="history-backdrop" id="historyBackdrop"></div>
+  <div class="history-panel" id="historyPanel">
+    <div class="history-panel-header">
+      <h3>📋 Verification History</h3>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHistory()">✕</button>
+    </div>
+    <div class="history-list" id="historyList">
+      <div class="empty-state">
+        <div class="empty-icon">📭</div>
+        <p>No verifications yet. Start by verifying some content!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="scripts.js"></script>
+  
+  <script>
+    // Initialize auth and UI
+    function initUserProfile() {
+      const user = getCurrentUser();
+      const profileWrapper = document.querySelector('.user-actions-wrapper');
+      const userNameElem = document.getElementById('userName');
+      const userAvatarElem = document.getElementById('userAvatar');
+      const adminLink = document.getElementById('adminLink');
+
+      if (!user) {
+        if (profileWrapper) {
+          profileWrapper.style.display = 'none';
+        }
+        if (adminLink) {
+          adminLink.style.display = 'none';
+        }
+        return;
+      }
+
+      if (userNameElem) {
+        userNameElem.textContent = user.username;
+      }
+      if (userAvatarElem) {
+        userAvatarElem.textContent = user.username.charAt(0).toUpperCase();
+      }
+
+      // Show admin link if user is admin
+      if (adminLink) {
+        const isAdmin = user.email && (user.email.includes('admin') || user.email.includes('@admin'));
+        adminLink.style.display = isAdmin ? 'block' : 'none';
+      }
+    }
+
+    function setupUserDropdown() {
+      const userProfile = document.getElementById('userProfile');
+      const userDropdown = document.getElementById('userDropdown');
+      if (!userProfile || !userDropdown) return;
+
+      userProfile.addEventListener('click', () => {
+        userDropdown.classList.toggle('show');
+      });
+
+      // Close dropdown when clicking outside
+      document.addEventListener('click', (e) => {
+        if (!userProfile.contains(e.target) && !userDropdown.contains(e.target)) {
+          userDropdown.classList.remove('show');
+        }
+      });
+    }
+
+    // Initialize page state without forcing authentication
+    initUserProfile();
+    setupUserDropdown();
+  </script>
+</body>
+</html>

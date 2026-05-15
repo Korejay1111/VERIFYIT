@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Intelligence Dashboard - VerifyIt Nigeria</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .admin-dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table th {
+            background: var(--bg-primary);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: var(--bg-hover);
+        }
+
+        .verdict-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .verdict-fake { background: var(--danger); color: white; }
+        .verdict-misleading { background: var(--warning); color: white; }
+        .verdict-real { background: var(--success); color: white; }
+        .verdict-uncertain { background: var(--text-muted); color: white; }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .error {
+            background: var(--danger);
+            color: white;
+            padding: 1rem;
+            border-radius: var(--radius-sm);
+            margin-bottom: 1rem;
+        }
+
+        .reports-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+
+        .reports-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .report-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .report-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="home.html">🔍 VerifyIt Nigeria</a>
+            </div>
+            <div class="navbar-actions">
+                <div class="user-actions-wrapper">
+                    <button class="btn btn-ghost" onclick="logout()">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-dashboard">
+        <div class="dashboard-header">
+            <h1>🧠 Admin Intelligence Dashboard</h1>
+            <p>Monitor verification trends, user reports, and AI performance</p>
+        </div>
+
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            Loading dashboard data...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="dashboardContent" style="display: none;">
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalVerifications">-</div>
+                    <div class="stat-label">Total Verifications</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="totalReports">-</div>
+                    <div class="stat-label">User Reports</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracyRate">-%</div>
+                    <div class="stat-label">AI Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="pendingReports">-</div>
+                    <div class="stat-label">Pending Reports</div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="chart-container">
+                <div class="chart-header">📈 Fake News Trends (Last 30 Days)</div>
+                <canvas id="trendsChart" width="400" height="200"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-header">🔥 Trending Misinformation Topics</div>
+                <canvas id="topicsChart" width="400" height="200"></canvas>
+            </div>
+
+            <!-- Most Checked Stories -->
+            <div class="chart-container">
+                <div class="chart-header">📖 Most Checked Stories</div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Content</th>
+                            <th>Checks</th>
+                            <th>Avg Score</th>
+                            <th>Verdict</th>
+                        </tr>
+                    </thead>
+                    <tbody id="storiesTable"></tbody>
+                </table>
+            </div>
+
+            <!-- User Reports -->
+            <div class="reports-section">
+                <div class="chart-container">
+                    <div class="chart-header">📋 Recent User Reports</div>
+                    <div id="reportsList" class="reports-list"></div>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-header">📊 AI Accuracy Statistics</div>
+                    <div style="padding: 1rem;">
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Total Feedback:</strong> <span id="totalFeedback">-</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Agreed with AI:</strong> <span id="agreedCount">-</span>
+                        </div>
+                        <div style="margin-bottom: 1rem;">
+                            <strong>Accuracy Rate:</strong> <span id="accuracyDetail">-%</span>
+                        </div>
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Accuracy is calculated based on user feedback on verification results.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        let trendsChart = null;
+        let topicsChart = null;
+
+        async function loadDashboard() {
+            try {
+                const token = getToken();
+                if (!token) {
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                const response = await fetch('/admin/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 403) {
+                    document.getElementById('error').textContent = 'Access denied. Admin privileges required.';
+                    document.getElementById('error').style.display = 'block';
+                    document.getElementById('loading').style.display = 'none';
+                    return;
+                }
+
+                if (!response.ok) throw new Error('Failed to load dashboard data');
+
+                const data = await response.json();
+
+                // Update stats
+                document.getElementById('totalVerifications').textContent = data.total_verifications;
+                document.getElementById('totalReports').textContent = data.total_reports;
+                document.getElementById('accuracyRate').textContent = data.ai_accuracy.accuracy_percentage + '%';
+                document.getElementById('pendingReports').textContent = data.user_reports.pending;
+
+                // Update accuracy details
+                document.getElementById('totalFeedback').textContent = data.ai_accuracy.total_feedback;
+                document.getElementById('agreedCount').textContent = data.ai_accuracy.agreed_count;
+                document.getElementById('accuracyDetail').textContent = data.ai_accuracy.accuracy_percentage + '%';
+
+                // Render trends chart
+                renderTrendsChart(data.fake_news_trends);
+
+                // Render topics chart
+                renderTopicsChart(data.trending_misinformation_topics);
+
+                // Render stories table
+                renderStoriesTable(data.most_checked_stories);
+
+                // Render reports
+                renderReports(data.user_reports.recent);
+
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboardContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Dashboard error:', error);
+                document.getElementById('error').textContent = 'Failed to load dashboard: ' + error.message;
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderTrendsChart(trends) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+
+            if (trendsChart) trendsChart.destroy();
+
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: trends.map(t => t.date),
+                    datasets: [{
+                        label: 'Fake/Misleading',
+                        data: trends.map(t => t.fake),
+                        borderColor: 'var(--danger)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Real/Credible',
+                        data: trends.map(t => t.real),
+                        borderColor: 'var(--success)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTopicsChart(topics) {
+            const ctx = document.getElementById('topicsChart').getContext('2d');
+
+            if (topicsChart) topicsChart.destroy();
+
+            topicsChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: topics.slice(0, 10).map(t => t.topic),
+                    datasets: [{
+                        label: 'Occurrences',
+                        data: topics.slice(0, 10).map(t => t.count),
+                        backgroundColor: 'var(--accent-primary)',
+                        borderColor: 'var(--accent-primary)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderStoriesTable(stories) {
+            const tbody = document.getElementById('storiesTable');
+            tbody.innerHTML = stories.map(story => `
+                <tr>
+                    <td>${escapeHtml(story.content.substring(0, 100))}...</td>
+                    <td>${story.count}</td>
+                    <td>${story.avg_score}%</td>
+                    <td><span class="verdict-badge verdict-${story.verdict.toLowerCase()}">${story.verdict}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderReports(reports) {
+            const container = document.getElementById('reportsList');
+            container.innerHTML = reports.map(report => `
+                <div class="report-item">
+                    <div><strong>${escapeHtml(report.category)}</strong>: ${escapeHtml(report.content.substring(0, 150))}...</div>
+                    <div><em>Reason: ${escapeHtml(report.reason)}</em></div>
+                    <div class="report-meta">
+                        Reported by: ${report.reported_by} | ${new Date(report.timestamp).toLocaleDateString()}
+                        ${report.source_url ? ` | Source: <a href="${report.source_url}" target="_blank">${report.source_url}</a>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Load dashboard on page load
+        document.addEventListener('DOMContentLoaded', loadDashboard);
+    </script>
+</body>
+</html>

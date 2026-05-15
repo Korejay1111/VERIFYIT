@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register — VerifyIt</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 1rem; }
+    .auth-container {
+      width: 100%;
+      max-width: 450px;
+      padding: 2rem;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+    .auth-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .auth-logo {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .auth-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0.5rem 0;
+    }
+    .auth-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin: 0.5rem 0 0 0;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-label {
+      display: block;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+    }
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+      transition: all 0.2s;
+      box-sizing: border-box;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      background: var(--bg-secondary);
+    }
+    .error-message {
+      color: #ef4444;
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+      display: none;
+    }
+    .error-message.show {
+      display: block;
+    }
+    .password-strength {
+      display: none;
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+    .strength-meter {
+      width: 100%;
+      height: 4px;
+      background: var(--bg-tertiary);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 0.25rem;
+    }
+    .strength-meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+    .strength-meter-fill.weak { width: 33%; background: #ef4444; }
+    .strength-meter-fill.medium { width: 66%; background: #f59e0b; }
+    .strength-meter-fill.strong { width: 100%; background: #10b981; }
+    .strength-text {
+      color: var(--text-muted);
+    }
+    .auth-button {
+      width: 100%;
+      padding: 0.875rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      background: var(--accent-primary);
+      color: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 1rem;
+    }
+    .auth-button:hover:not(:disabled) {
+      background: var(--accent-primary-dark, #0066cc);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 102, 255, 0.3);
+    }
+    .auth-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    .auth-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.95rem;
+    }
+    .auth-footer a {
+      color: var(--accent-primary);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .auth-footer a:hover {
+      text-decoration: underline;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .success-message {
+      background: #dbeafe;
+      color: #0c4a6e;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      display: none;
+      text-align: center;
+    }
+    .success-message.show {
+      display: block;
+    }
+  </style>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-header">
+      <div class="auth-logo">✓</div>
+      <h1 class="auth-title">Verify<span class="brand-accent">It</span></h1>
+      <p class="auth-subtitle">Create a new account</p>
+    </div>
+
+    <div class="success-message" id="successMessage">
+      Account created! Redirecting to app...
+    </div>
+
+    <form id="registerForm">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input 
+          type="email" 
+          id="email" 
+          class="form-input" 
+          placeholder="your@email.com"
+          required
+          autocomplete="email"
+        >
+        <div class="error-message" id="emailError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="username">Username</label>
+        <input 
+          type="text" 
+          id="username" 
+          class="form-input" 
+          placeholder="Choose a username"
+          required
+          autocomplete="username"
+          minlength="3"
+          maxlength="20"
+        >
+        <div class="error-message" id="usernameError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input 
+          type="password" 
+          id="password" 
+          class="form-input" 
+          placeholder="At least 8 characters"
+          required
+          autocomplete="new-password"
+          minlength="8"
+        >
+        <div class="password-strength" id="passwordStrength">
+          <div class="strength-meter">
+            <div class="strength-meter-fill" id="strengthMeter"></div>
+          </div>
+          <div class="strength-text" id="strengthText">Weak</div>
+        </div>
+        <div class="error-message" id="passwordError"></div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="confirmPassword">Confirm Password</label>
+        <input 
+          type="password" 
+          id="confirmPassword" 
+          class="form-input" 
+          placeholder="Re-enter your password"
+          required
+          autocomplete="new-password"
+        >
+        <div class="error-message" id="confirmPasswordError"></div>
+      </div>
+
+      <div class="error-message" id="generalError"></div>
+
+      <button type="submit" class="auth-button btn btn-primary" id="registerBtn">
+        Create Account
+      </button>
+
+      <div class="loading" id="loading">
+        Creating account...
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="login.html">Login here</a>
+    </div>
+  </div>
+
+  <script src="auth.js"></script>
+  <script>
+    const passwordInput = document.getElementById('password');
+    const strengthMeter = document.getElementById('strengthMeter');
+    const strengthText = document.getElementById('strengthText');
+    const passwordStrength = document.getElementById('passwordStrength');
+
+    passwordInput.addEventListener('input', () => {
+      const password = passwordInput.value;
+      const strength = calculatePasswordStrength(password);
+      
+      passwordStrength.style.display = password.length > 0 ? 'block' : 'none';
+      
+      if (strength === 'weak') {
+        strengthMeter.className = 'strength-meter-fill weak';
+        strengthText.textContent = 'Weak';
+      } else if (strength === 'medium') {
+        strengthMeter.className = 'strength-meter-fill medium';
+        strengthText.textContent = 'Medium';
+      } else {
+        strengthMeter.className = 'strength-meter-fill strong';
+        strengthText.textContent = 'Strong';
+      }
+    });
+
+    function calculatePasswordStrength(password) {
+      if (password.length < 8) return 'weak';
+      
+      let strength = 0;
+      if (/[a-z]/.test(password)) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^a-zA-Z0-9]/.test(password)) strength++;
+      
+      if (strength <= 2) return 'weak';
+      if (strength === 3) return 'medium';
+      return 'strong';
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await handleRegister();
+    });
+
+    async function handleRegister() {
+      const email = document.getElementById('email').value.trim();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const registerBtn = document.getElementById('registerBtn');
+      const loading = document.getElementById('loading');
+      const generalError = document.getElementById('generalError');
+
+      // Clear errors
+      document.getElementById('emailError').textContent = '';
+      document.getElementById('usernameError').textContent = '';
+      document.getElementById('passwordError').textContent = '';
+      document.getElementById('confirmPasswordError').textContent = '';
+      generalError.textContent = '';
+      generalError.classList.remove('show');
+
+      // Validate
+      if (!email || !username || !password || !confirmPassword) {
+        generalError.textContent = 'Please fill in all fields';
+        generalError.classList.add('show');
+        return;
+      }
+
+      if (!isValidEmail(email)) {
+        document.getElementById('emailError').textContent = 'Please enter a valid email';
+        document.getElementById('emailError').classList.add('show');
+        return;
+      }
+
+      if (username.length < 3) {
+        document.getElementById('usernameError').textContent = 'Username must be at least 3 characters';
+        document.getElementById('usernameError').classList.add('show');
+        return;
+      }
+
+      if (password.length < 8) {
+        document.getElementById('passwordError').textContent = 'Password must be at least 8 characters';
+        document.getElementById('passwordError').classList.add('show');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        document.getElementById('confirmPasswordError').textContent = 'Passwords do not match';
+        document.getElementById('confirmPasswordError').classList.add('show');
+        return;
+      }
+
+      registerBtn.disabled = true;
+      loading.style.display = 'block';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, username, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          // Save token
+          localStorage.setItem('verifyit-token', data.access_token);
+          localStorage.setItem('verifyit-user', JSON.stringify(data.user));
+          
+          document.getElementById('successMessage').classList.add('show');
+          setTimeout(() => {
+            window.location.href = 'home.html';
+          }, 1000);
+        } else {
+          generalError.textContent = data.detail || 'Registration failed. Please try again.';
+          generalError.classList.add('show');
+        }
+      } catch (error) {
+        console.error('Registration error:', error);
+        generalError.textContent = 'Connection error. Please try again.';
+        generalError.classList.add('show');
+      } finally {
+        registerBtn.disabled = false;
+        loading.style.display = 'none';
+      }
+    }
+
+    function isValidEmail(email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return emailRegex.test(email);
+    }
+
+    // Initialize theme
+    initTheme?.();
+    initThemeSelector?.();
+  </script>
+</body>
+</html>

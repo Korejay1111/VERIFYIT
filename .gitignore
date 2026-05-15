@@ -1,0 +1,26 @@
+# Virtual environment
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# VS Code
+.vscode/
+
+# Browser/session data
+.browser_data/
+.psiphon_data/
+
+# Screenshots
+.screenshots/
+
+# Output folders
+outputs/
+
+# Environment variables
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
