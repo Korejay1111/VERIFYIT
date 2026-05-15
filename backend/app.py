@@ -625,8 +625,23 @@ Respond ONLY with valid JSON."""
 async def extract_content_from_url(url: str) -> dict:
     """Extract text content from a URL."""
     try:
+        # Use realistic browser headers to avoid bot detection
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "DNT": "1",
+            "Connection": "keep-alive",
+            "Upgrade-Insecure-Requests": "1",
+            "Sec-Fetch-Dest": "document",
+            "Sec-Fetch-Mode": "navigate",
+            "Sec-Fetch-Site": "none",
+            "Cache-Control": "max-age=0"
+        }
+        
         async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            response = await client.get(url, headers={"User-Agent": "VerifyIt/2.0 (compatible; Mozilla/5.0)"})
+            response = await client.get(url, headers=headers)
             
             if response.status_code != 200:
                 return {"error": f"Failed to fetch URL: {response.status_code}"}
