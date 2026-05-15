@@ -212,12 +212,12 @@ python3 -m http.server 5500
 
 ## 🌐 Access URLs
 
-| Service                | URL                             |
-| ---------------------- | ------------------------------- |
-| **Frontend (Website)** | http://127.0.0.1:5500/home.html |
-| **Backend API**        | http://127.0.0.1:8000           |
-| **API Documentation**  | http://127.0.0.1:8000/docs      |
-| **API Health Check**   | http://127.0.0.1:8000/          |
+| Service                | URL                                               |
+| ---------------------- | ------------------------------------------------- |
+| **Frontend (Website)** | http://127.0.0.1:5500/home.html                   |
+| **Backend API**        | https://verifyit-3.onrender.com                   |
+| **API Documentation**  | https://verifyit-3.onrender.com/docs              |
+| **API Health Check**   | https://verifyit-3.onrender.com/                  |
 
 ---
 
