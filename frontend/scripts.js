@@ -1243,7 +1243,7 @@ async function reportContent(type, dataStr) {
       return;
     }
 
-    const response = await fetch('/report', {
+    const response = await fetch(`${API_BASE_URL}/report`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1287,7 +1287,7 @@ async function provideFeedback(type, score, verdict) {
       return;
     }
 
-    const response = await fetch('/feedback', {
+    const response = await fetch(`${API_BASE_URL}/feedback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
