@@ -1,0 +1,10 @@
+[project]
+name = "verifyit"
+version = "0.1.0"
+description = "VerifyIt Nigeria FastAPI backend"
+requires-python = ">=3.9"
+
+[tool.vercel]
+framework = "fastapi"
+entrypoint = "backend/app.py"
+pythonVersion = "3.11"

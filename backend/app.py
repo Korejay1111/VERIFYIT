@@ -4,6 +4,8 @@ FastAPI application with BERT, Gemini Vision, Groq LLM, and Web Search
 Optimized for Nigerian news verification with Punch Nigeria integration
 """
 
+
+
 from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
