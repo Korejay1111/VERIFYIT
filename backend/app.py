@@ -878,7 +878,7 @@ async def logout(current_user: User = Depends(get_current_user)):
 async def root():
     """Serve the main application page."""
     from fastapi.responses import FileResponse
-    return FileResponse("home.html", media_type="text/html")
+    return FileResponse(os.path.join(FRONTEND_DIR, "home.html"), media_type="text/html")
 
 @app.post("/check")
 async def check_text(request: TextRequest, current_user: User = Depends(get_current_user)):
