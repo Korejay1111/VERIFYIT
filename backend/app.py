@@ -23,8 +23,13 @@ from dotenv import load_dotenv
 from supabase import create_client
 import secrets
 
+# --- Directory Setup ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
+
 # --- Environment Configuration ---
-load_dotenv()
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
@@ -48,8 +53,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 security = HTTPBearer()
 
 # --- Data Storage ---
-VERIFICATIONS_FILE = "verifications.json"
-REPORTS_FILE = "reports.json"
+VERIFICATIONS_FILE = os.path.join(BASE_DIR, "verifications.json")
+REPORTS_FILE = os.path.join(BASE_DIR, "reports.json")
 
 def load_verifications():
     """Load verification history from JSON file."""
@@ -107,7 +112,7 @@ app.add_middleware(
 )
 
 # --- Supabase Helpers ---
-USERS_DB_FILE = "users.json"
+USERS_DB_FILE = os.path.join(BASE_DIR, "users.json")
 
 def sync_supabase_user_record(username: str, email: str, action: str = "login") -> None:
     """Collect user profile activity in Supabase when users sign up or log in."""
@@ -1363,7 +1368,7 @@ async def health_check():
     }
 
 # --- Static Files ---
-app.mount("/", StaticFiles(directory=".", html=True), name="static")
+app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
 
 # --- Run ---
 if __name__ == "__main__":

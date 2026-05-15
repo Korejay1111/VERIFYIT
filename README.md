@@ -241,15 +241,27 @@ INFO:     Application startup complete.
 
 ```
 VerifAI/
-├── app.py              # 🔧 Backend API server (FastAPI)
-├── requirements.txt    # 📦 Python dependencies
-├── home.html           # 🏠 Main verification page
-├── about.html          # ℹ️ About page
-├── index.html          # 🚪 Landing page
-├── styles.css          # 🎨 Themes & styling
-├── scripts.js          # ⚡ Frontend JavaScript logic
-├── favicon.png         # 🖼️ Site icon
-└── README.md           # 📖 This file
+├── backend/
+│   ├── app.py              # 🔧 Backend API server (FastAPI)
+│   ├── requirements.txt    # 📦 Python dependencies
+│   ├── users.json          # 👤 Auth user store
+│   ├── reports.json        # 📝 Report storage
+│   └── verifications.json  # 📊 Verification history
+├── frontend/
+│   ├── index.html          # 🚪 Landing page
+│   ├── home.html           # 🏠 Main verification page
+│   ├── about.html          # ℹ️ About page
+│   ├── admin.html          # 🔧 Admin dashboard
+│   ├── login.html          # 🔐 Login page
+│   ├── register.html       # ✍️ Registration page
+│   ├── styles.css          # 🎨 Themes & styling
+│   ├── scripts.js          # ⚡ Frontend JavaScript logic
+│   ├── auth.js             # 🔐 Authentication helpers
+│   └── favicon.png         # 🖼️ Site icon
+├── .env.example            # 🌱 Environment variable example
+├── README.md               # 📖 This file
+├── LICENSE                # 📜 License
+└── .gitignore              # 🚫 Git ignore rules
 ```
 
 ---
