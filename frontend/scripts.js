@@ -194,7 +194,10 @@ async function verifyDeepfake() {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
     renderDeepfakeResults(resultsDiv, data);
@@ -829,7 +832,10 @@ async function verifyText() {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
     renderResults(resultsDiv, data, 'text');
@@ -908,7 +914,10 @@ async function verifyUrl() {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
     renderResults(resultsDiv, data, 'url');
@@ -985,7 +994,10 @@ async function verifyImage() {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
     renderResults(resultsDiv, data, 'image');
@@ -1053,7 +1065,10 @@ async function extractTextFromImage() {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
 
@@ -1257,7 +1272,10 @@ async function reportContent(type, dataStr) {
       })
     });
 
-    if (!response.ok) throw new Error('Failed to submit report');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to submit report');
+    }
 
     const result = await response.json();
     showToast('Report submitted successfully!', 'success');
@@ -1300,7 +1318,10 @@ async function provideFeedback(type, score, verdict) {
       })
     });
 
-    if (!response.ok) throw new Error('Failed to submit feedback');
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Failed to submit feedback');
+    }
 
     showToast('Feedback submitted successfully!', 'success');
   } catch (error) {
@@ -1369,7 +1390,10 @@ async function loadTrendingNews(category = 'all') {
       return;
     }
 
-    if (!response.ok) throw new Error(`Server error: ${response.status}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.detail || `Server error: ${response.status}`);
+    }
 
     const data = await response.json();
     const articles = data.articles || [];
