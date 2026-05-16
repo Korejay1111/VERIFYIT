@@ -3,7 +3,13 @@
    Handles user authentication, tokens, and session management
    ============================================================ */
 
-const API_BASE_URL = 'https://verifyit-3.onrender.com';
+const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = (function() {
+  if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return DEFAULT_API_BASE_URL;
+  }
+  return window.location.origin;
+})();
 const TOKEN_KEY = 'verifyit-token';
 const USER_KEY = 'verifyit-user';
 
