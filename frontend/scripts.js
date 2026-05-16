@@ -59,9 +59,7 @@ function initCharCount() {
   });
 }
 
-const LOCAL_API_BASE_URL = 'https://verifyit-3.onrender.com';
-const BASE_API_URL = window.API_BASE_URL || LOCAL_API_BASE_URL;
-console.log('[VerifyIt] BASE_API_URL =', BASE_API_URL);
+const BASE_API_URL = 'https://verifyit-3.onrender.com';
 
 // --- Image Upload ---
 function initImageUpload() {
@@ -869,7 +867,6 @@ async function verifyUrl() {
   const input = document.getElementById('urlInput');
   const resultsDiv = document.getElementById('urlResults');
   const btn = document.getElementById('verifyUrlBtn');
-  const API_URL = "https://https://verifyit-3.onrender.com/check-url";
 
   if (!input || !resultsDiv) return;
   if (!requireAuth()) return;

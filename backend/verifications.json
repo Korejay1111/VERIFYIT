@@ -28,5 +28,88 @@
       "sources_count": 0,
       "red_flags_count": 0
     }
+  },
+  {
+    "id": 3,
+    "type": "text",
+    "content": "tinubu is the president of NIGER,",
+    "score": 46.0,
+    "verdict": "Uncertain",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:26:57.235326",
+    "metadata": {
+      "bert_score": 50.0,
+      "llm_score": 50.0,
+      "web_score": 40.0,
+      "sources_count": 5,
+      "red_flags_count": 0
+    }
+  },
+  {
+    "id": 4,
+    "type": "image",
+    "content": "New Horizons Flyer.jpg",
+    "score": 50.0,
+    "verdict": "Possibly Credible",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:30:18.697494",
+    "metadata": {
+      "extracted_text_length": 0,
+      "manipulation_indicators": 0,
+      "sources_count": 0
+    }
+  },
+  {
+    "id": 5,
+    "type": "image",
+    "content": "New Horizons Flyer.jpg",
+    "score": 50.0,
+    "verdict": "Possibly Credible",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:30:37.388372",
+    "metadata": {
+      "extracted_text_length": 0,
+      "manipulation_indicators": 0,
+      "sources_count": 0
+    }
+  },
+  {
+    "id": 6,
+    "type": "deepfake",
+    "content": "my_tomorrow.mp4",
+    "score": 70.0,
+    "verdict": "Likely Deepfake",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:30:50.921058",
+    "metadata": {
+      "media_type": "video",
+      "detection_details_count": 2
+    }
+  },
+  {
+    "id": 7,
+    "type": "deepfake",
+    "content": "my_tomorrow.mp4",
+    "score": 70.0,
+    "verdict": "Likely Deepfake",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:31:03.756613",
+    "metadata": {
+      "media_type": "video",
+      "detection_details_count": 2
+    }
+  },
+  {
+    "id": 8,
+    "type": "deepfake",
+    "content": "my_tomorrow.mp4",
+    "score": 70.0,
+    "verdict": "Likely Deepfake",
+    "user": "Kore",
+    "timestamp": "2026-05-16T10:31:14.660026",
+    "metadata": {
+      "media_type": "video",
+      "detection_details_count": 2
+    }
   }
 ]
