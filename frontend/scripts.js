@@ -59,6 +59,10 @@ function initCharCount() {
   });
 }
 
+const LOCAL_API_BASE_URL = 'http://127.0.0.1:8000';
+const BASE_API_URL = window.API_BASE_URL || LOCAL_API_BASE_URL;
+console.log('[VerifyIt] BASE_API_URL =', BASE_API_URL);
+
 // --- Image Upload ---
 function initImageUpload() {
   const zone = document.getElementById('imageUploadZone');
@@ -174,7 +178,7 @@ async function verifyDeepfake() {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/check-deepfake`, {
+    const response = await fetch(`${BASE_API_URL}/check-deepfake`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -816,7 +820,7 @@ async function verifyText() {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/check`, {
+    const response = await fetch(`${BASE_API_URL}/check`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -834,7 +838,7 @@ async function verifyText() {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Server error: ${response.status}`);
+      throw new Error(`${errorData.detail || `Server error: ${response.status}`} (endpoint: ${BASE_API_URL}/check)`);
     }
 
     const data = await response.json();
@@ -898,7 +902,7 @@ async function verifyUrl() {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/check-url`, {
+    const response = await fetch(`${BASE_API_URL}/check-url`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -916,7 +920,7 @@ async function verifyUrl() {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `Server error: ${response.status}`);
+      throw new Error(`${errorData.detail || `Server error: ${response.status}`} (endpoint: ${BASE_API_URL}/check-url)`);
     }
 
     const data = await response.json();
@@ -975,7 +979,7 @@ async function verifyImage() {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/check-image`, {
+    const response = await fetch(`${BASE_API_URL}/check-image`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -1046,7 +1050,7 @@ async function extractTextFromImage() {
       throw new Error('Not authenticated');
     }
 
-    const response = await fetch(`${API_BASE_URL}/extract-text`, {
+    const response = await fetch(`${BASE_API_URL}/extract-text`, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -1258,7 +1262,7 @@ async function reportContent(type, dataStr) {
       return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/report`, {
+    const response = await fetch(`${BASE_API_URL}/report`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1305,7 +1309,7 @@ async function provideFeedback(type, score, verdict) {
       return;
     }
 
-    const response = await fetch(`${API_BASE_URL}/feedback`, {
+    const response = await fetch(`${BASE_API_URL}/feedback`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1372,8 +1376,8 @@ async function loadTrendingNews(category = 'all') {
 
   try {
     const url = category === 'all'
-      ? `${API_BASE_URL}/trending-news`
-      : `${API_BASE_URL}/trending-news?category=${category}`;
+      ? `${BASE_API_URL}/trending-news`
+      : `${BASE_API_URL}/trending-news?category=${category}`;
 
     const token = getToken();
     const headers = {};

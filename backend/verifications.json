@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": 1,
+    "type": "url",
+    "content": "https://punchng.com/popular-tv-host-estranged-wife-spill-dirty-extra-marital-secrets/#google_vignette",
+    "score": 50.0,
+    "verdict": "Possibly Credible",
+    "user": "Kore",
+    "timestamp": "2026-05-16T09:47:02.802778",
+    "metadata": {
+      "title": "",
+      "content_length": 5000,
+      "sources_count": 0,
+      "red_flags_count": 0
+    }
+  }
+]

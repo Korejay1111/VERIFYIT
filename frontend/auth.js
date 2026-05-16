@@ -3,13 +3,15 @@
    Handles user authentication, tokens, and session management
    ============================================================ */
 
-const DEFAULT_API_BASE_URL = 'http://localhost:8000';
+const DEFAULT_API_BASE_URL = 'http://127.0.0.1:8000';
 const API_BASE_URL = (function() {
   if (window.location.protocol === 'file:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
     return DEFAULT_API_BASE_URL;
   }
   return window.location.origin;
 })();
+window.API_BASE_URL = API_BASE_URL;
+console.log('[VerifyIt] API_BASE_URL =', API_BASE_URL);
 const TOKEN_KEY = 'verifyit-token';
 const USER_KEY = 'verifyit-user';
 
