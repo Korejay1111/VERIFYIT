@@ -353,15 +353,38 @@ a:hover { color: var(--accent-secondary); }
   white-space: pre-wrap;
   margin-bottom: 1rem;
 }
+.quiz-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 14, 23, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  z-index: 10010;
+}
 .quiz-widget {
+  width: min(720px, 100%);
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
   padding: 1.75rem;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-lg);
+  max-height: calc(100vh - 4rem);
+  overflow: auto;
 }
+.quiz-widget .quiz-header {
+  gap: 1rem;
+}
+.quiz-widget .quiz-body {
+  margin-top: 1rem;
+}
+.quiz-widget .quiz-footer {
+  margin-top: 1.75rem;
+}
+.quiz-backdrop.hidden,
 .quiz-widget.hidden {
-  display: none;
+  display: none !important;
 }
 .hidden {
   display: none !important;

@@ -336,18 +336,20 @@
         </article>
       </div>
 
-      <div id="quizWidget" class="quiz-widget hidden">
-        <div class="quiz-header">
-          <div>
-            <h3 id="quizTitle">Fake News Quiz</h3>
-            <p id="quizProgress">Question 1 of 5</p>
+      <div id="quizModalBackdrop" class="quiz-backdrop hidden">
+        <div id="quizWidget" class="quiz-widget">
+          <div class="quiz-header">
+            <div>
+              <h3 id="quizTitle">Fake News Quiz</h3>
+              <p id="quizProgress">Question 1 of 5</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="toggleQuiz()">Close</button>
           </div>
-          <button class="btn btn-ghost btn-sm" onclick="toggleQuiz()">Close</button>
-        </div>
-        <div class="quiz-body" id="quizBody"></div>
-        <div class="quiz-footer">
-          <button type="button" class="btn btn-secondary btn-sm" id="quizNextBtn" onclick="quizNext()">Next Question</button>
-          <button type="button" class="btn btn-primary btn-sm hidden" id="quizRestartBtn" onclick="resetQuiz()">Try Again</button>
+          <div class="quiz-body" id="quizBody"></div>
+          <div class="quiz-footer">
+            <button type="button" class="btn btn-secondary btn-sm" id="quizNextBtn" onclick="quizNext()">Next Question</button>
+            <button type="button" class="btn btn-primary btn-sm hidden" id="quizRestartBtn" onclick="resetQuiz()">Try Again</button>
+          </div>
         </div>
       </div>
     </div>

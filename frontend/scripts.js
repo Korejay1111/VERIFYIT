@@ -588,34 +588,34 @@ function initLanguageSelector() {
 
 const quizQuestions = [
   {
-    question: 'Which clue is most likely to indicate a fake news headline?',
-    options: ['Balanced quotes from credible sources', 'Sensational language and ALL CAPS', 'Article written by a verified news outlet', 'A clear publication date'],
+    question: 'Is this headline real or fake? “BREAKING: Government to ban all mobile phones nationwide tonight.”',
+    options: ['Real', 'Fake'],
     answer: 1,
-    explanation: 'Fake news headlines often use sensational wording, all caps, or emotional triggers to attract clicks.'
+    explanation: 'This headline is exaggerated and unlikely. Real news rarely uses extreme urgency to force immediate action.'
   },
   {
-    question: 'What should you do before sharing a suspicious news claim?',
-    options: ['Share immediately with friends', 'Check multiple trusted sources first', 'Believe it if it sounds familiar', 'Only read the headline'],
+    question: 'Is this headline real or fake? “Local hospital reports a 30% drop in malaria cases after new prevention campaign.”',
+    options: ['Real', 'Fake'],
+    answer: 0,
+    explanation: 'This headline is plausible and specific, with a realistic claim that would come from health reporting.'
+  },
+  {
+    question: 'Is this headline real or fake? “Celebrity endorses miracle pill that cures diabetes in 3 days.”',
+    options: ['Real', 'Fake'],
     answer: 1,
-    explanation: 'Good verification means checking multiple trusted sources before passing on the claim.'
+    explanation: 'Miracle cure claims are a common sign of misinformation; true medical news is not this sensational.'
   },
   {
-    question: 'A reliable article usually includes:',
-    options: ['A single anonymous source', 'No author name or date', 'Clear author attribution and cited sources', 'A headline with many emojis'],
-    answer: 2,
-    explanation: 'Credible articles normally have clear attribution, author details, and cited sources.'
+    question: 'Is this headline real or fake? “University publishes peer-reviewed study on renewable energy adoption.”',
+    options: ['Real', 'Fake'],
+    answer: 0,
+    explanation: 'This sounds like legitimate science reporting, with specific details and a reasonable source.'
   },
   {
-    question: 'What is a red flag for misinformation?',
-    options: ['Citing official statements', 'Linking to trusted websites', 'Excessive urgency and fear language', 'Correct spelling and grammar'],
-    answer: 2,
-    explanation: 'Misinformation often uses urgent or emotionally charged language to bypass careful thinking.'
-  },
-  {
-    question: 'How can WhatsApp help with verification?',
-    options: ['By forwarding every claim immediately', 'By reporting suspicious content to experts or fact-checkers', 'By trusting any forwarded message', 'By using only voice notes'],
+    question: 'Is this headline real or fake? “Virus spread linked to 5G towers in city center.”',
+    options: ['Real', 'Fake'],
     answer: 1,
-    explanation: 'WhatsApp can help share suspicious claims with trusted fact-checkers or groups that verify information.'
+    explanation: 'This is a conspiracy-style claim combining unrelated topics, which is a red flag for fake news.'
   }
 ];
 
@@ -627,12 +627,14 @@ let quizState = {
 };
 
 function toggleQuiz() {
+  const backdrop = document.getElementById('quizModalBackdrop');
   const widget = document.getElementById('quizWidget');
   const toggleBtn = document.getElementById('quizToggleBtn');
-  if (!widget || !toggleBtn) return;
+  const target = backdrop || widget;
+  if (!target || !toggleBtn) return;
 
-  const opening = widget.classList.contains('hidden');
-  widget.classList.toggle('hidden');
+  const opening = target.classList.contains('hidden');
+  target.classList.toggle('hidden');
   if (opening) {
     quizState = { current: 0, score: 0, answered: false, completed: false };
     renderQuizQuestion();
