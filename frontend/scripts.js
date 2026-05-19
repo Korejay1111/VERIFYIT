@@ -586,6 +586,76 @@ function initLanguageSelector() {
   translatePage();
 }
 
+// --- Profile Save / Settings Save ---
+function saveProfile() {
+  const name = document.getElementById('profileNameInput')?.value?.trim();
+  const email = document.getElementById('profileEmailInput')?.value?.trim();
+  const location = document.getElementById('profileLocationInput')?.value?.trim();
+  const bio = document.getElementById('profileBioInput')?.value?.trim();
+
+  if (!name) {
+    showToast('Please enter your name before saving.', 'warning');
+    return;
+  }
+
+  // Update local current user
+  const current = getCurrentUser() || {};
+  const updated = Object.assign({}, current, {
+    username: name,
+    email: email || current.email || '',
+    location: location || current.location || '',
+    bio: bio || current.bio || ''
+  });
+  setCurrentUser(updated);
+
+  // Update UI
+  const userNameElem = document.getElementById('userName');
+  const userAvatarElem = document.getElementById('userAvatar');
+  if (userNameElem) userNameElem.textContent = updated.username;
+  if (userAvatarElem) userAvatarElem.textContent = updated.username.charAt(0).toUpperCase();
+
+  showToast('Profile saved locally.', 'success');
+
+  // Try to persist to backend if authenticated — best-effort
+  (async () => {
+    try {
+      if (isAuthenticated()) {
+        // Attempt to call a common user-update endpoint. If it fails, ignore but log.
+        const payload = { username: updated.username, location: updated.location, bio: updated.bio };
+        await apiCall('/user', { method: 'PUT', body: JSON.stringify(payload) });
+        showToast('Profile saved to server.', 'success');
+      }
+    } catch (err) {
+      console.warn('Server profile save failed:', err.message || err);
+    }
+  })();
+
+  // Close modal
+  openProfile(false);
+}
+
+function populateProfileForm() {
+  const user = getCurrentUser() || {};
+  const nameInput = document.getElementById('profileNameInput');
+  const emailInput = document.getElementById('profileEmailInput');
+  const locationInput = document.getElementById('profileLocationInput');
+  const bioInput = document.getElementById('profileBioInput');
+  const avatar = document.getElementById('profileAvatar');
+  if (nameInput) nameInput.value = user.username || '';
+  if (emailInput) emailInput.value = user.email || '';
+  if (locationInput) locationInput.value = user.location || '';
+  if (bioInput) bioInput.value = user.bio || '';
+  if (avatar) avatar.textContent = (user.username || 'U').charAt(0).toUpperCase();
+}
+
+function saveSettings() {
+  const lang = document.getElementById('settingsLanguageSelect')?.value || localStorage.getItem(LANGUAGE_KEY) || 'en';
+  setLanguage(lang); // immediate preview + persist
+  // Theme is applied immediately via the theme buttons
+  showToast('Settings updated.', 'success');
+  openSettings(false);
+}
+
 const quizQuestions = [
   {
     question: 'Is this headline real or fake? “BREAKING: Government to ban all mobile phones nationwide tonight.”',
@@ -1375,9 +1445,11 @@ async function loadTrendingNews(category = 'all') {
   `;
 
   try {
+    // Trending news should be Nigeria-specific. Add region=nigeria.
+    const baseTrending = `${BASE_API_URL}/trending-news?region=nigeria`;
     const url = category === 'all'
-      ? `${BASE_API_URL}/trending-news`
-      : `${BASE_API_URL}/trending-news?category=${category}`;
+      ? baseTrending
+      : `${baseTrending}&category=${encodeURIComponent(category)}`;
 
     const token = getToken();
     const headers = {};

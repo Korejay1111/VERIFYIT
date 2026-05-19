@@ -352,6 +352,89 @@
           </div>
         </div>
       </div>
+
+      <!-- Profile Modal -->
+      <div id="profileModalBackdrop" class="quiz-backdrop hidden">
+        <div class="quiz-widget" id="profileWidget">
+          <div class="quiz-header">
+            <div>
+              <h3>Profile</h3>
+              <p id="profileEmail"></p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="openProfile(false)">Close</button>
+          </div>
+          <div class="quiz-body" id="profileBody">
+            <form id="profileForm" onsubmit="event.preventDefault(); saveProfile();">
+              <div style="display:flex;gap:1rem;align-items:center;">
+                <div class="user-avatar" id="profileAvatar" style="width:72px;height:72px;font-size:1.6rem;"></div>
+                <div style="flex:1;">
+                  <input id="profileNameInput" type="text" placeholder="Full name" style="font-weight:700;font-size:1.1rem;width:100%;padding:0.25rem;" />
+                  <div id="profileRole" style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.25rem;"></div>
+                </div>
+              </div>
+
+              <div style="margin-top:1rem;display:grid;gap:0.5rem;">
+                <label style="font-size:0.85rem;color:var(--text-secondary);">Email (read-only)</label>
+                <input id="profileEmailInput" type="email" readonly style="background:var(--bg-secondary);padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);" />
+
+                <label style="font-size:0.85rem;color:var(--text-secondary);">Location</label>
+                <input id="profileLocationInput" type="text" placeholder="City, Country" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);" />
+
+                <label style="font-size:0.85rem;color:var(--text-secondary);">Bio</label>
+                <textarea id="profileBioInput" rows="3" placeholder="Short bio or role" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);"></textarea>
+
+                <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
+                  <button type="button" class="btn btn-ghost" onclick="openProfile(false)">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Profile</button>
+                </div>
+              </div>
+
+              <div style="margin-top:1rem;">
+                <button class="btn btn-primary" onclick="window.location.href='admin.html'" id="profileAdminBtn" style="display:none;">Go to Admin Dashboard</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Modal -->
+      <div id="settingsModalBackdrop" class="quiz-backdrop hidden">
+        <div class="quiz-widget" id="settingsWidget">
+          <div class="quiz-header">
+            <div>
+              <h3>Settings</h3>
+              <p>Customize your experience</p>
+            </div>
+            <button class="btn btn-ghost btn-sm" onclick="openSettings(false)">Close</button>
+          </div>
+          <div class="quiz-body" id="settingsBody">
+            <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
+              <div style="display:grid;gap:0.75rem;">
+                <label>Theme</label>
+                <div style="display:flex;gap:0.5rem;">
+                  <button type="button" class="btn btn-ghost" onclick="setTheme('dark')">Dark</button>
+                  <button type="button" class="btn btn-ghost" onclick="setTheme('light')">Light</button>
+                  <button type="button" class="btn btn-ghost" onclick="setTheme('ocean')">Ocean</button>
+                  <button type="button" class="btn btn-ghost" onclick="setTheme('forest')">Forest</button>
+                </div>
+
+                <label>Language</label>
+                <select id="settingsLanguageSelect">
+                  <option value="en">English</option>
+                  <option value="yo">Yoruba</option>
+                  <option value="ha">Hausa</option>
+                  <option value="ig">Igbo</option>
+                </select>
+
+                <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+                  <button type="button" class="btn btn-ghost" onclick="openSettings(false)">Cancel</button>
+                  <button type="submit" class="btn btn-primary">Save Settings</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -499,37 +582,45 @@
       const adminLink = document.getElementById('adminLink');
 
       if (!user) {
-        if (profileWrapper) {
-          profileWrapper.style.display = 'none';
-        }
-        if (adminLink) {
-          adminLink.style.display = 'none';
-        }
+        if (profileWrapper) profileWrapper.style.display = 'none';
+        if (adminLink) adminLink.style.display = 'none';
         return;
       }
 
-      if (userNameElem) {
-        userNameElem.textContent = user.username;
-      }
-      if (userAvatarElem) {
-        userAvatarElem.textContent = user.username.charAt(0).toUpperCase();
-      }
+      if (userNameElem) userNameElem.textContent = user.username;
+      if (userAvatarElem) userAvatarElem.textContent = user.username.charAt(0).toUpperCase();
 
       // Show admin link if user is admin
       if (adminLink) {
         const isAdmin = user.email && (user.email.includes('admin') || user.email.includes('@admin'));
         adminLink.style.display = isAdmin ? 'block' : 'none';
       }
+
+      // Populate profile modal fields if present
+      const profileName = document.getElementById('profileName');
+      const profileEmail = document.getElementById('profileEmail');
+      const profileAvatar = document.getElementById('profileAvatar');
+      const profileAdminBtn = document.getElementById('profileAdminBtn');
+      if (profileName) profileName.textContent = user.username;
+      if (profileEmail) profileEmail.textContent = user.email || '';
+      if (profileAvatar) profileAvatar.textContent = user.username.charAt(0).toUpperCase();
+      if (profileAdminBtn) profileAdminBtn.style.display = (user.email && (user.email.includes('admin')||user.email.includes('@admin'))) ? 'inline-block' : 'none';
     }
 
     function setupUserDropdown() {
       const userProfile = document.getElementById('userProfile');
       const userDropdown = document.getElementById('userDropdown');
+      const profileLink = document.getElementById('profileLink');
+      const settingsLink = document.getElementById('settingsLink');
       if (!userProfile || !userDropdown) return;
 
       userProfile.addEventListener('click', () => {
         userDropdown.classList.toggle('show');
       });
+
+      // Profile/settings handlers
+      if (profileLink) profileLink.addEventListener('click', (e) => { e.preventDefault(); openProfile(true); userDropdown.classList.remove('show'); });
+      if (settingsLink) settingsLink.addEventListener('click', (e) => { e.preventDefault(); openSettings(true); userDropdown.classList.remove('show'); });
 
       // Close dropdown when clicking outside
       document.addEventListener('click', (e) => {
@@ -537,6 +628,34 @@
           userDropdown.classList.remove('show');
         }
       });
+    }
+
+    // Open/close profile modal
+    function openProfile(open=true) {
+      const backdrop = document.getElementById('profileModalBackdrop');
+      if (!backdrop) return;
+      if (open) {
+        initUserProfile();
+        backdrop.classList.remove('hidden');
+      } else {
+        backdrop.classList.add('hidden');
+      }
+    }
+
+    // Open/close settings modal
+    function openSettings(open=true) {
+      const backdrop = document.getElementById('settingsModalBackdrop');
+      if (!backdrop) return;
+      if (open) {
+        const langSelect = document.getElementById('settingsLanguageSelect');
+        if (langSelect) {
+          langSelect.value = localStorage.getItem('verifyit-language') || localStorage.getItem('verifyit-lang') || 'en';
+          langSelect.addEventListener('change', () => { setLanguage(langSelect.value); });
+        }
+        backdrop.classList.remove('hidden');
+      } else {
+        backdrop.classList.add('hidden');
+      }
     }
 
     // Initialize page state without forcing authentication
