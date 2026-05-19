@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Intelligence Dashboard - VerifyIt Nigeria</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">    <link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css\">    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .admin-dashboard {
             max-width: 1400px;
@@ -140,7 +139,7 @@
     <nav class="navbar" id="navbar">
         <div class="container">
             <div class="navbar-brand">
-                <a href="home.html">🔍 VerifyIt Nigeria</a>
+                <a href="home.html"><i class="fas fa-search"></i> VerifyIt Nigeria</a>
             </div>
             <div class="navbar-actions">
                 <div class="user-actions-wrapper">
@@ -152,7 +151,7 @@
 
     <div class="admin-dashboard">
         <div class="dashboard-header">
-            <h1>🧠 Admin Intelligence Dashboard</h1>
+            <h1><i class="fas fa-brain"></i> Admin Intelligence Dashboard</h1>
             <p>Monitor verification trends, user reports, and AI performance</p>
         </div>
 
@@ -186,18 +185,18 @@
 
             <!-- Charts -->
             <div class="chart-container">
-                <div class="chart-header">📈 Fake News Trends (Last 30 Days)</div>
+                <div class="chart-header"><i class="fas fa-chart-line"></i> Fake News Trends (Last 30 Days)</div>
                 <canvas id="trendsChart" width="400" height="200"></canvas>
             </div>
 
             <div class="chart-container">
-                <div class="chart-header">🔥 Trending Misinformation Topics</div>
+                <div class="chart-header"><i class="fas fa-fire"></i> Trending Misinformation Topics</div>
                 <canvas id="topicsChart" width="400" height="200"></canvas>
             </div>
 
             <!-- Most Checked Stories -->
             <div class="chart-container">
-                <div class="chart-header">📖 Most Checked Stories</div>
+                <div class="chart-header"><i class="fas fa-book-open"></i> Most Checked Stories</div>
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -214,7 +213,7 @@
             <!-- User Reports -->
             <div class="reports-section">
                 <div class="chart-container">
-                    <div class="chart-header">📋 Recent User Reports</div>
+                    <div class="chart-header"><i class="fas fa-clipboard"></i> Recent User Reports</div>
                     <div id="reportsList" class="reports-list"></div>
                 </div>
                 <div class="chart-container">

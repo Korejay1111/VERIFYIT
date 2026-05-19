@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <style>
     .user-profile {
       display: flex;
@@ -89,7 +90,7 @@
   <nav class="navbar" id="navbar">
     <div class="container">
       <a href="home.html" class="navbar-brand">
-        <div class="brand-icon">✓</div>
+        <div class="brand-icon"><i class="fas fa-check"></i></div>
         Verify<span class="brand-accent">It</span>
       </a>
 
@@ -100,11 +101,11 @@
 
       <div class="navbar-actions">
         <div class="theme-selector" id="themeSelector">
-          <div class="theme-dot active" data-theme="dark" title="Dark">🌑</div>
-          <div class="theme-dot" data-theme="light" title="Light">☀️</div>
-          <div class="theme-dot" data-theme="ocean" title="Ocean">🌊</div>
-          <div class="theme-dot" data-theme="forest" title="Forest">🌲</div>
-          <div class="theme-dot" data-theme="cream" title="Cream">🧁</div>
+          <div class="theme-dot active" data-theme="dark" title="Dark"><i class="fas fa-moon"></i></div>
+          <div class="theme-dot" data-theme="light" title="Light"><i class="fas fa-sun"></i></div>
+          <div class="theme-dot" data-theme="ocean" title="Ocean"><i class="fas fa-water"></i></div>
+          <div class="theme-dot" data-theme="forest" title="Forest"><i class="fas fa-tree"></i></div>
+          <div class="theme-dot" data-theme="cream" title="Cream"><i class="fas fa-ice-cream"></i></div>
         </div>
         <div class="language-selector">
           <select id="languageSelect" aria-label="Choose language">
@@ -114,7 +115,7 @@
             <option value="ig">IBO</option>
           </select>
         </div>
-        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Verification History">📋</button>
+        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Verification History"><i class="fas fa-clipboard"></i></button>
         
         <!-- User Profile Dropdown -->
         <div class="user-actions-wrapper">
@@ -123,14 +124,14 @@
             <span id="userName">User</span>
           </div>
           <div class="user-profile-dropdown" id="userDropdown">
-            <div class="dropdown-item" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'">🧠 Admin Dashboard</div>
-            <div class="dropdown-item" id="profileLink">👤 Profile</div>
-            <div class="dropdown-item" id="settingsLink">⚙️ Settings</div>
-            <div class="dropdown-item logout" id="logoutBtn" onclick="logout()">🚪 Logout</div>
+            <div class="dropdown-item" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'"><i class="fas fa-brain"></i> Admin Dashboard</div>
+            <div class="dropdown-item" id="profileLink"><i class="fas fa-user"></i> Profile</div>
+            <div class="dropdown-item" id="settingsLink"><i class="fas fa-cog"></i> Settings</div>
+            <div class="dropdown-item logout" id="logoutBtn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
           </div>
         </div>
 
-        <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
       </div>
     </div>
   </nav>
@@ -146,7 +147,7 @@
         <h1 data-i18n="hero_heading">Detect Fake News<br>with <span class="gradient-text">VerifyIt Nigeria</span></h1>
         <p data-i18n="hero_paragraph">Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.</p>
         <div class="hero-buttons">
-          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Verifying ↓</a>
+          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Verifying <i class="fas fa-arrow-down"></i></a>
           <a href="#trending" class="btn btn-secondary btn-lg" data-i18n="hero_trending">Trending News</a>
         </div>
         <div class="hero-stats">
@@ -177,7 +178,7 @@
         <!-- Text Verification Card -->
         <div class="verify-card">
           <div class="card-header">
-            <div class="card-icon">📝</div>
+            <div class="card-icon"><i class="fas fa-file-alt"></i></div>
             <div>
               <div class="card-title" data-i18n="text_card_title">Text Verification</div>
               <div class="card-desc" data-i18n="text_card_desc">Paste an article or claim to analyze</div>
@@ -194,7 +195,7 @@
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
-              🔍 Verify Text
+              <i class="fas fa-search"></i> Verify Text
             </button>
             <button class="btn btn-ghost" onclick="clearText()">Clear</button>
           </div>
@@ -206,7 +207,7 @@
         <!-- URL Verification Card -->
         <div class="verify-card">
           <div class="card-header">
-            <div class="card-icon">🔗</div>
+            <div class="card-icon"><i class="fas fa-link"></i></div>
             <div>
               <div class="card-title" data-i18n="url_card_title">URL Verification</div>
               <div class="card-desc" data-i18n="url_card_desc">Enter a news article URL to analyze</div>
@@ -223,7 +224,7 @@
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
-              🔍 Verify URL
+              <i class="fas fa-search"></i> Verify URL
             </button>
             <button class="btn btn-ghost" onclick="clearUrl()">Clear</button>
           </div>
@@ -235,7 +236,7 @@
         <!-- Image Verification Card -->
         <div class="verify-card">
           <div class="card-header">
-            <div class="card-icon">🖼️</div>
+            <div class="card-icon"><i class="fas fa-image"></i></div>
             <div>
               <div class="card-title" data-i18n="image_card_title">Image Verification</div>
               <div class="card-desc" data-i18n="image_card_desc">Upload a screenshot or news image</div>
@@ -243,7 +244,7 @@
           </div>
 
           <div class="image-upload-zone" id="imageUploadZone">
-            <div class="upload-icon">📁</div>
+            <div class="upload-icon"><i class="fas fa-folder-open"></i></div>
             <div class="upload-text">Drop an image here or click to upload</div>
             <div class="upload-hint">Supports JPG, PNG, WEBP (max 10MB)</div>
             <input type="file" id="imageInput" accept="image/*" style="display: none;">
@@ -251,15 +252,15 @@
 
           <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
             <img id="imagePreview" src="" alt="Preview">
-            <button class="remove-image-btn" onclick="removeImage()">✕</button>
+            <button class="remove-image-btn" onclick="removeImage()"><i class="fas fa-times"></i></button>
           </div>
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyImageBtn" onclick="verifyImage()">
-              🔍 Verify Image
+              <i class="fas fa-search"></i> Verify Image
             </button>
             <button class="btn btn-ghost" onclick="extractTextFromImage()">
-              📄 Extract Text First
+              <i class="fas fa-file"></i> Extract Text First
             </button>
           </div>
 
@@ -281,14 +282,14 @@
 
       <div class="feature-grid">
         <article class="feature-card deepfake-card">
-          <div class="feature-card-icon">🎥</div>
+          <div class="feature-card-icon"><i class="fas fa-video"></i></div>
           <h3 data-i18n="deepfake_card_title">Deepfake Media Detector</h3>
           <p data-i18n="deepfake_card_desc">Upload audio or video to detect synthetic media and get AI explanations.</p>
           <div class="deepfake-controls">
             <input type="file" id="deepfakeFileInput" accept="audio/*,video/*" style="display: none;">
             <button type="button" class="btn btn-secondary" onclick="document.getElementById('deepfakeFileInput').click()" data-i18n="deepfake_button">Upload Media</button>
             <div class="deepfake-selected" id="deepfakeFileSelected" data-i18n="deepfake_input_placeholder">No file selected</div>
-            <button type="button" class="btn btn-primary btn-sm" onclick="verifyDeepfake()" data-i18n="deepfake_detect_btn">🔍 Detect Deepfake</button>
+            <button type="button" class="btn btn-primary btn-sm" onclick="verifyDeepfake()" data-i18n="deepfake_detect_btn"><i class="fas fa-search"></i> Detect Deepfake</button>
           </div>
           <div id="deepfakeResults"></div>
         </article>
@@ -308,14 +309,14 @@
 
       <div class="feature-grid">
         <article class="feature-card">
-          <div class="feature-card-icon">🧠</div>
+          <div class="feature-card-icon"><i class="fas fa-brain"></i></div>
           <h3 data-i18n="quiz_title">Fake News Quiz</h3>
           <p data-i18n="quiz_desc">Challenge yourself with short quiz questions to spot misinformation.</p>
           <button type="button" class="btn btn-secondary" id="quizToggleBtn" onclick="toggleQuiz()" data-i18n="start_quiz_btn">Start Quiz</button>
         </article>
 
         <article class="feature-card whatsapp-card">
-          <div class="feature-card-icon">💬</div>
+          <div class="feature-card-icon"><i class="fas fa-comment"></i></div>
           <h3 data-i18n="whatsapp_title">WhatsApp Verification Helper</h3>
           <p data-i18n="whatsapp_desc">Generate a ready-made WhatsApp message to report or verify suspicious claims.</p>
           <textarea id="whatsappClaimInput" class="verify-input" rows="4" placeholder="Paste the claim or headline you want to verify..." data-i18n-placeholder="whatsapp_input_placeholder"></textarea>
@@ -328,7 +329,7 @@
         </article>
 
         <article class="feature-card language-card">
-          <div class="feature-card-icon">🌍</div>
+          <div class="feature-card-icon"><i class="fas fa-globe"></i></div>
           <h3 data-i18n="language_title">Local Language Support</h3>
           <p data-i18n="language_desc">Switch to Yoruba, Hausa, or Igbo for a more comfortable verification experience.</p>
           <div class="language-summary" data-i18n="language_info">Use the selector above to choose your local language.</div>
@@ -390,7 +391,7 @@
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
             How does VerifyIt detect fake news?
-            <span class="faq-toggle">+</span>
+            <span class="faq-toggle"><i class="fas fa-plus"></i></span>
           </button>
           <div class="faq-answer">
             <div class="faq-answer-inner">
@@ -470,12 +471,12 @@
   <div class="history-backdrop" id="historyBackdrop"></div>
   <div class="history-panel" id="historyPanel">
     <div class="history-panel-header">
-      <h3>📋 Verification History</h3>
-      <button class="btn btn-ghost btn-sm" onclick="toggleHistory()">✕</button>
+      <h3><i class="fas fa-clipboard"></i> Verification History</h3>
+      <button class="btn btn-ghost btn-sm" onclick="toggleHistory()"><i class="fas fa-times"></i></button>
     </div>
     <div class="history-list" id="historyList">
       <div class="empty-state">
-        <div class="empty-icon">📭</div>
+        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
         <p>No verifications yet. Start by verifying some content!</p>
       </div>
     </div>

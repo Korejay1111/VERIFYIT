@@ -467,6 +467,10 @@ a:hover { color: var(--accent-secondary); }
   box-shadow: var(--shadow-glow);
 }
 
+.navbar-brand .brand-icon i {
+  font-size: 1.2rem;
+}
+
 .navbar-brand .brand-accent {
   background: var(--accent-gradient);
   -webkit-background-clip: text;
@@ -521,7 +525,11 @@ a:hover { color: var(--accent-secondary); }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.7rem;
+  font-size: 0.85rem;
+}
+
+.theme-dot i {
+  font-size: 0.9rem;
 }
 
 .theme-dot:hover { transform: scale(1.15); }
@@ -1536,6 +1544,73 @@ a:hover { color: var(--accent-secondary); }
   font-size: 1.2rem;
   color: var(--text-secondary);
   margin-bottom: 2rem;
+}
+
+/* --- Font Awesome Icons Styling --- */
+i.fas,
+i.far,
+i.fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icon in buttons */
+.btn i {
+  margin-right: 0.4rem;
+}
+
+.btn-icon i {
+  margin-right: 0;
+}
+
+/* Icon in cards */
+.card-icon i,
+.feature-card-icon i,
+.mission-icon i,
+.tech-icon i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/* Icon in mission cards and tech items */
+.mission-card .mission-icon i,
+.tech-item .tech-icon i {
+  font-size: inherit;
+}
+
+/* Stakeholder avatars */
+.stakeholder-avatar i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: inherit;
+}
+
+/* Theme selector icons */
+.theme-dot i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* FAQ toggle icon */
+.faq-toggle i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mobile menu button */
+.mobile-menu-btn i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .landing-loader {
