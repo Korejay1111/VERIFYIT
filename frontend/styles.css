@@ -556,9 +556,11 @@ a:hover { color: var(--accent-secondary); }
 }
 
 .theme-dot:hover { transform: scale(1.15); }
-.theme-dot.active {
+.theme-dot.active,
+.settings-theme-button.active {
   border-color: var(--text-primary);
   transform: scale(1.15);
+  box-shadow: 0 0 0 2px rgba(255,255,255,0.12);
 }
 
 .theme-dot[data-theme="dark"] { background: #0a0e17; }

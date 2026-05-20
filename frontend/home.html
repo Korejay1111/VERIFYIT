@@ -100,21 +100,6 @@
       </ul>
 
       <div class="navbar-actions">
-        <div class="theme-selector" id="themeSelector">
-          <div class="theme-dot active" data-theme="dark" title="Dark"><i class="fas fa-moon"></i></div>
-          <div class="theme-dot" data-theme="light" title="Light"><i class="fas fa-sun"></i></div>
-          <div class="theme-dot" data-theme="ocean" title="Ocean"><i class="fas fa-water"></i></div>
-          <div class="theme-dot" data-theme="forest" title="Forest"><i class="fas fa-tree"></i></div>
-          <div class="theme-dot" data-theme="cream" title="Cream"><i class="fas fa-ice-cream"></i></div>
-        </div>
-        <div class="language-selector">
-          <select id="languageSelect" aria-label="Choose language">
-            <option value="en">EN</option>
-            <option value="yo">YOR</option>
-            <option value="ha">HAU</option>
-            <option value="ig">IBO</option>
-          </select>
-        </div>
         <button class="btn btn-ghost btn-icon" id="historyBtn" title="Verification History"><i class="fas fa-clipboard"></i></button>
         
         <!-- User Profile Dropdown -->
@@ -412,10 +397,10 @@
               <div style="display:grid;gap:0.75rem;">
                 <label>Theme</label>
                 <div style="display:flex;gap:0.5rem;">
-                  <button type="button" class="btn btn-ghost" onclick="setTheme('dark')">Dark</button>
-                  <button type="button" class="btn btn-ghost" onclick="setTheme('light')">Light</button>
-                  <button type="button" class="btn btn-ghost" onclick="setTheme('ocean')">Ocean</button>
-                  <button type="button" class="btn btn-ghost" onclick="setTheme('forest')">Forest</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="dark" onclick="setTheme('dark')">Dark</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="light" onclick="setTheme('light')">Light</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="ocean" onclick="setTheme('ocean')">Ocean</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="forest" onclick="setTheme('forest')">Forest</button>
                 </div>
 
                 <label>Language</label>
@@ -604,6 +589,8 @@
       if (profileName) profileName.textContent = user.username;
       if (profileEmail) profileEmail.textContent = user.email || '';
       if (profileAvatar) profileAvatar.textContent = user.username.charAt(0).toUpperCase();
+      const profileRole = document.getElementById('profileRole');
+      if (profileRole) profileRole.textContent = user.email && (user.email.includes('admin') || user.email.includes('@admin')) ? 'Admin' : 'Verified User';
       if (profileAdminBtn) profileAdminBtn.style.display = (user.email && (user.email.includes('admin')||user.email.includes('@admin'))) ? 'inline-block' : 'none';
     }
 
@@ -636,6 +623,7 @@
       if (!backdrop) return;
       if (open) {
         initUserProfile();
+        populateProfileForm();
         backdrop.classList.remove('hidden');
       } else {
         backdrop.classList.add('hidden');
@@ -646,12 +634,16 @@
     function openSettings(open=true) {
       const backdrop = document.getElementById('settingsModalBackdrop');
       if (!backdrop) return;
+      const langSelect = document.getElementById('settingsLanguageSelect');
       if (open) {
-        const langSelect = document.getElementById('settingsLanguageSelect');
         if (langSelect) {
-          langSelect.value = localStorage.getItem('verifyit-language') || localStorage.getItem('verifyit-lang') || 'en';
-          langSelect.addEventListener('change', () => { setLanguage(langSelect.value); });
+          langSelect.value = localStorage.getItem(LANGUAGE_KEY) || 'en';
+          if (!langSelect.dataset.initialized) {
+            langSelect.addEventListener('change', () => setLanguage(langSelect.value));
+            langSelect.dataset.initialized = 'true';
+          }
         }
+        updateThemeButtons(localStorage.getItem('verifyit-theme') || 'dark');
         backdrop.classList.remove('hidden');
       } else {
         backdrop.classList.add('hidden');

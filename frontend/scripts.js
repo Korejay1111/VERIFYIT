@@ -7,18 +7,18 @@
 function initTheme() {
   const saved = localStorage.getItem('verifyit-theme') || 'dark';
   document.documentElement.setAttribute('data-theme', saved);
-  updateThemeDots(saved);
+  updateThemeButtons(saved);
 }
 
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('verifyit-theme', theme);
-  updateThemeDots(theme);
+  updateThemeButtons(theme);
 }
 
-function updateThemeDots(theme) {
-  document.querySelectorAll('.theme-dot').forEach(dot => {
-    dot.classList.toggle('active', dot.dataset.theme === theme);
+function updateThemeButtons(theme) {
+  document.querySelectorAll('.theme-dot, .settings-theme-button').forEach(el => {
+    el.classList.toggle('active', el.dataset.theme === theme);
   });
 }
 
