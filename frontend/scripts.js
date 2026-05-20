@@ -405,7 +405,7 @@ const translations = {
     nav_verify: 'Verify',
     nav_about: 'About',
     hero_badge: 'AI-Powered Verification',
-    hero_heading: 'Detect Fake News with VerifyIt Nigeria',
+    hero_heading: 'Detect Fake News with VerifyIt',
     hero_paragraph: 'Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.',
     hero_start: 'Start Verifying ↓',
     hero_trending: 'Trending News',
@@ -436,7 +436,7 @@ const translations = {
     nav_verify: 'Ṣàyẹwo',
     nav_about: 'Nipa',
     hero_badge: 'Ìmúlòlùfẹ́ AI',
-    hero_heading: 'Ṣàwárí Ìròyìn Asán pẹ̀lú VerifyIt Nigeria',
+    hero_heading: 'Ṣàwárí Ìròyìn Asán pẹ̀lú VerifyIt',
     hero_paragraph: 'Da àpilẹ̀kọ sílẹ̀ tàbí gbe àwòrán kan sórí — Ẹ̀rọ AI wa yóò ṣe àyẹ̀wò àti fí ìtẹ́numọ́ hàn ní ìsẹ́jú.',
     hero_start: 'Bẹrẹ Ṣàyẹwo ↓',
     hero_trending: 'Ìròyìn tó ń gbajú',
@@ -474,7 +474,7 @@ const translations = {
     nav_verify: 'Tabbatar',
     nav_about: 'Game da',
     hero_badge: 'Bincike na AI',
-    hero_heading: 'Gano Karya Labarai tare da VerifyIt Nigeria',
+    hero_heading: 'Gano Karya Labarai tare da VerifyIt',
     hero_paragraph: 'Manna labarin ko ɗora hoton allo — ƙirar AI namu zata bincika sannan ta bayar da sakamako cikin sauri.',
     hero_start: 'Fara Tabbatarwa ↓',
     hero_trending: 'Labarai Masu Ƙarfi',
@@ -512,7 +512,7 @@ const translations = {
     nav_verify: 'Nyocha',
     nav_about: 'Banyere',
     hero_badge: 'Nyocha AI',
-    hero_heading: 'Chọta Akwụkwọ Akụkọ Ụgha na VerifyIt Nigeria',
+    hero_heading: 'Chọta Akwụkwọ Akụkọ Ụgha na VerifyIt',
     hero_paragraph: 'Tinye akụkọ ma ọ bụ bulite onyonyo — igwe AI anyị ga-enyocha ma nye akara ntụkwasị obi n’oge.',
     hero_start: 'Malite Nyocha ↓',
     hero_trending: 'Akụkọ Na-apụta',
@@ -1445,7 +1445,7 @@ async function loadTrendingNews(category = 'all') {
   `;
 
   try {
-    // Trending news should be Nigeria-specific. Add region=nigeria.
+    // Trending news should be Nigeria-specific, but verification analysis is worldwide.
     const baseTrending = `${BASE_API_URL}/trending-news?region=nigeria`;
     const url = category === 'all'
       ? baseTrending
