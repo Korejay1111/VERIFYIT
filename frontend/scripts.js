@@ -280,7 +280,7 @@ function renderDeepfakeResults(container, data) {
 
         ${data.explanations && data.explanations.length > 0 ? `
           <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
-            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">💡 AI Explanation</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">💡 ${getTranslation('result_ai_analysis')}</h4>
             <ul style="margin: 0; padding-left: 1.2rem; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.7;">
               ${data.explanations.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
             </ul>
@@ -400,6 +400,10 @@ function escapeHtml(text) {
 const LANGUAGE_KEY = 'verifyit-language';
 const WHATSAPP_SHARE_BASE = 'https://api.whatsapp.com/send?text=';
 
+function getSelectedLanguage() {
+  return document.getElementById('settingsLanguageSelect')?.value || localStorage.getItem(LANGUAGE_KEY) || 'en';
+}
+
 const translations = {
   en: {
     nav_verify: 'Verify',
@@ -430,7 +434,21 @@ const translations = {
     whatsapp_open: 'Open WhatsApp',
     language_title: 'Local Language Support',
     language_desc: 'Switch to Yoruba, Hausa, or Igbo for a more comfortable verification experience.',
-    language_info: 'Use the selector above to choose your local language.'
+    language_info: 'Use the selector above to choose your local language.',
+    result_title: 'Verification Result',
+    result_ai_analysis: 'AI Analysis',
+    result_sources: 'Sources Found',
+    no_analysis_available: 'No detailed analysis available.',
+    verdict_likely_credible: 'Likely Credible',
+    verdict_possibly_credible: 'Possibly Credible',
+    verdict_uncertain: 'Uncertain',
+    verdict_likely_unreliable: 'Likely Unreliable',
+    verdict_very_likely_fake: 'Very Likely Fake',
+    verdict_desc_high: 'This content appears highly credible and is well-supported by trusted sources.',
+    verdict_desc_medium: 'This content seems mostly credible but some claims could not be fully verified.',
+    verdict_desc_mixed: 'This content has mixed signals — some claims check out while others are questionable.',
+    verdict_desc_warning: 'This content shows significant warning signs of being unreliable or misleading.',
+    verdict_desc_fake: 'This content is very likely to be fake or heavily misleading. Exercise extreme caution.'
   },
   yo: {
     nav_verify: 'Ṣàyẹwo',
@@ -468,7 +486,21 @@ const translations = {
     whatsapp_open: 'Ṣí WhatsApp',
     language_title: 'Atilẹyin Èdè Agbegbe',
     language_desc: 'Yan Yorùbá, Hausa, tàbí Igbo fún ìrírí títúnṣe tó rọrùn.',
-    language_info: 'Lo aṣàyàn èdè loke láti yan èdè agbegbe rẹ.'
+    language_info: 'Lo aṣàyàn èdè loke láti yan èdè agbegbe rẹ.',
+    result_title: 'Esi Ṣàyẹwo',
+    result_ai_analysis: 'Ìtúpalẹ̀ AI',
+    result_sources: 'Orísun Tó Rí',
+    no_analysis_available: 'Kò sí àlàyé pípa tó wà.',
+    verdict_likely_credible: 'Ẹ̀rí Òótọ́ Ló Wà',
+    verdict_possibly_credible: 'Ṣeé Ṣàtúnṣe',
+    verdict_uncertain: 'Aìdánidájọ́',
+    verdict_likely_unreliable: 'Kò Dáa Gẹ́gẹ́ Bí Ó Tó',
+    verdict_very_likely_fake: 'Ẹ̀rí Ọ̀tító Kò Dáa',
+    verdict_desc_high: 'Àkóónú yìí dàbí ẹni pé ó ní ìmúlòlùfẹ́ gíga àti orísun tó dájú.',
+    verdict_desc_medium: 'Àkóónú yìí dàbí ẹni pé ó lè jẹ́ gidi ṣùgbọ́n ìkan nínú rẹ̀ kò tíì jẹ́ kó dájú.',
+    verdict_desc_mixed: 'Àkóónú yìí ní ami àìmọ̀kan — diẹ̀ nínú ẹ̀rí wà, ṣugbọn àwọn míì ṣòro láti jẹ́ kó dájú.',
+    verdict_desc_warning: 'Àkóónú yìí fi àfihàn ìkìlọ̀ hàn pé ó lè jẹ́ aláìdánidájọ́ tàbí ẹ̀sùn.',
+    verdict_desc_fake: 'Àkóónú yìí dájú pé ó ṣeé ṣe kí ó jẹ́ ìròyìn asán. Ṣọra gan-an.'
   },
   ha: {
     nav_verify: 'Tabbatar',
@@ -506,7 +538,21 @@ const translations = {
     whatsapp_open: 'Bude WhatsApp',
     language_title: 'Taimako na Yanki',
     language_desc: 'Canza zuwa Yorùbá, Hausa, ko Igbo don ƙwarewa mafi sauƙi.',
-    language_info: 'Yi amfani da zaɓin harshe a sama don zaɓar harshen ka.'
+    language_info: 'Yi amfani da zaɓin harshe a sama don zaɓar harshen ka.',
+    result_title: 'Sakamakon Tabbatarwa',
+    result_ai_analysis: 'Binciken AI',
+    result_sources: 'Tushen da aka samu',
+    no_analysis_available: 'Babu cikakken bayani da aka samu.',
+    verdict_likely_credible: 'Mai Yuwuwar Amincewa',
+    verdict_possibly_credible: 'Yiwuwar Amincewa',
+    verdict_uncertain: 'Ba a Tabbatar ba',
+    verdict_likely_unreliable: 'Mai Yuwuwar Rashin Amincewa',
+    verdict_very_likely_fake: 'Mai Yuwuwar Karya',
+    verdict_desc_high: 'Wannan abun cikin yana nuna alamun gaskiya sosai kuma ana tallafawa da tushen da suka dace.',
+    verdict_desc_medium: 'Wannan abun cikin yana da alamar gaskiya amma wasu ƙididdiga ba a iya tabbatar da su ba.',
+    verdict_desc_mixed: 'Wannan abun cikin yana da alamun gauraye — wasu abubuwa sun dace amma wasu suna da tambaya.',
+    verdict_desc_warning: 'Wannan abun cikin yana nuna manyan alamun cewa ba a iya dogaro da shi ba ko kuma yana iya zama mai yaudara.',
+    verdict_desc_fake: 'Wannan abun cikin yana iya zama ƙarya sosai ko kuma yaudara. Kasance mai matukar hankali.'
   },
   ig: {
     nav_verify: 'Nyocha',
@@ -544,13 +590,39 @@ const translations = {
     whatsapp_open: 'Meghee WhatsApp',
     language_title: 'Nkwado Asụsụ Ọgbakọ',
     language_desc: 'Họrọ Yoruba, Hausa, ma ọ bụ Igbo maka ahụmịhe nchegharị ka mma.',
-    language_info: 'Jiri onye nhọpụta asụsụ n’elu họrọ asụsụ mpaghara gị.'
+    language_info: 'Jiri onye nhọpụta asụsụ n’elu họrọ asụsụ mpaghara gị.',
+    result_title: 'Nsonaazụ Nyocha',
+    result_ai_analysis: 'Nyocha AI',
+    result_sources: 'Isi iyi e hụrụ',
+    no_analysis_available: 'Enweghị nkọwa zuru ezu dị.',
+    verdict_likely_credible: 'O yiri ka ọ bụ eziokwu',
+    verdict_possibly_credible: 'O nwere ike ịbụ eziokwu',
+    verdict_uncertain: 'E nweghị nkenke',
+    verdict_likely_unreliable: 'O yiri ka ọ bụghị ntụkwasị obi',
+    verdict_very_likely_fake: 'O yiri ka ọ bụ ụgha',
+    verdict_desc_high: 'Ihe a yiri ka ọ ga-adị ezigbo ntụkwasị obi ma kwado ya site na isi iyi a pụrụ ịdabere na ya.',
+    verdict_desc_medium: 'Ihe a yiri ka ọ pụrụ ịbụ eziokwu mana ụfọdụ nkwupụta adịghị edozi.',
+    verdict_desc_mixed: 'Ihe a nwere akara ngwakọta — ụfọdụ ihe doro anya ma ụfọdụ adịghị mma.',
+    verdict_desc_warning: 'Ihe a na-egosi ihe ngosi siri ike na ọ gaghị adị ntụkwasị obi ma ọ bụ nwere ike ịghọgharia.',
+    verdict_desc_fake: 'Ihe a ga-adị ọtụtụ oge ụgha ma ọ bụ nke a na-ezighị ezi. Nwee nchegbu nke ukwuu.'
   }
 };
 
 function getTranslation(key) {
   const lang = localStorage.getItem(LANGUAGE_KEY) || 'en';
   return translations[lang]?.[key] || translations.en[key] || '';
+}
+
+function localizeVerdict(verdict) {
+  const mapping = {
+    'Likely Credible': 'verdict_likely_credible',
+    'Possibly Credible': 'verdict_possibly_credible',
+    'Uncertain': 'verdict_uncertain',
+    'Likely Unreliable': 'verdict_likely_unreliable',
+    'Very Likely Fake': 'verdict_very_likely_fake'
+  };
+  const key = mapping[verdict] || 'verdict_uncertain';
+  return getTranslation(key) || verdict;
 }
 
 function translatePage() {
@@ -566,7 +638,7 @@ function translatePage() {
     if (!value) return;
     el.setAttribute('placeholder', value);
   });
-  const langSelect = document.getElementById('languageSelect');
+  const langSelect = document.getElementById('settingsLanguageSelect');
   if (langSelect) {
     langSelect.value = localStorage.getItem(LANGUAGE_KEY) || 'en';
   }
@@ -578,7 +650,7 @@ function setLanguage(lang) {
 }
 
 function initLanguageSelector() {
-  const selector = document.getElementById('languageSelect');
+  const selector = document.getElementById('settingsLanguageSelect');
   if (!selector) return;
   selector.addEventListener('change', () => setLanguage(selector.value));
   const saved = localStorage.getItem(LANGUAGE_KEY) || 'en';
@@ -896,7 +968,7 @@ async function verifyText() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ text })
+      body: JSON.stringify({ text, language: getSelectedLanguage() })
     });
 
     if (response.status === 401) {
@@ -978,7 +1050,7 @@ async function verifyUrl() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({ url, language: getSelectedLanguage() })
     });
 
     if (response.status === 401) {
@@ -1057,7 +1129,8 @@ async function verifyImage() {
       },
       body: JSON.stringify({
         image: base64,
-        filename: currentImageFile.name
+        filename: currentImageFile.name,
+        language: getSelectedLanguage()
       })
     });
 
@@ -1128,7 +1201,8 @@ async function extractTextFromImage() {
       },
       body: JSON.stringify({
         image: base64,
-        filename: currentImageFile.name
+        filename: currentImageFile.name,
+        language: getSelectedLanguage()
       })
     });
 
@@ -1193,8 +1267,8 @@ async function extractTextFromImage() {
 // --- Render Results ---
 function renderResults(container, data, type) {
   const score = Math.round(data.credibility_score || 0);
-  const verdict = data.verdict || 'Uncertain';
-  const reasoning = data.reasoning || data.llm_analysis || 'No detailed analysis available.';
+  const verdict = localizeVerdict(data.verdict || 'Uncertain');
+  const reasoning = data.reasoning || data.llm_analysis || getTranslation('no_analysis_available');
 
   // Determine color based on score
   let scoreColor = 'var(--danger)';
@@ -1219,7 +1293,7 @@ function renderResults(container, data, type) {
   container.innerHTML = `
     <div class="results-panel">
       <div class="results-header">
-        <h3>${type === 'text' ? '📝' : type === 'url' ? '🔗' : '🖼️'} Verification Result</h3>
+        <h3>${type === 'text' ? '📝' : type === 'url' ? '🔗' : '🖼️'} ${getTranslation('result_title')}</h3>
         <button class="btn btn-ghost btn-sm" onclick="this.closest('.results-panel').remove()">✕</button>
       </div>
       <div class="results-body">
@@ -1272,7 +1346,7 @@ function renderResults(container, data, type) {
 
         ${reasoning ? `
           <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">
-            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">💡 AI Analysis</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">💡 ${getTranslation('result_ai_analysis')}</h4>
             <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7;">${escapeHtml(reasoning)}</p>
           </div>
         ` : ''}
@@ -1288,7 +1362,7 @@ function renderResults(container, data, type) {
 
         ${data.sources && data.sources.length > 0 ? `
           <div style="margin-top: 1.25rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
-            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">🔗 Sources Found</h4>
+            <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 0.5rem;">🔗 ${getTranslation('result_sources')}</h4>
             <div style="display: flex; flex-direction: column; gap: 0.35rem;">
               ${data.sources.slice(0, 5).map(s => `
                 <a href="${escapeHtml(s.url || '#')}" target="_blank" rel="noopener"
@@ -1305,11 +1379,11 @@ function renderResults(container, data, type) {
 }
 
 function getVerdictDescription(score) {
-  if (score >= 70) return 'This content appears highly credible and is well-supported by trusted sources.';
-  if (score >= 50) return 'This content seems mostly credible but some claims could not be fully verified.';
-  if (score >= 30) return 'This content has mixed signals — some claims check out while others are questionable.';
-  if (score >= 15) return 'This content shows significant warning signs of being unreliable or misleading.';
-  return 'This content is very likely to be fake or heavily misleading. Exercise extreme caution.';
+  if (score >= 70) return getTranslation('verdict_desc_high');
+  if (score >= 50) return getTranslation('verdict_desc_medium');
+  if (score >= 30) return getTranslation('verdict_desc_mixed');
+  if (score >= 15) return getTranslation('verdict_desc_warning');
+  return getTranslation('verdict_desc_fake');
 }
 
 // --- Report Content ---

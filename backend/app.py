@@ -18,6 +18,7 @@ import time
 import re
 import base64
 import os
+import asyncio
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 from jose import JWTError, jwt
@@ -285,13 +286,16 @@ TRUSTED_SOURCES = [
 # --- Models ---
 class TextRequest(BaseModel):
     text: str
+    language: str = "en"
 
 class UrlRequest(BaseModel):
     url: str
+    language: str = "en"
 
 class ImageRequest(BaseModel):
     image: str
     filename: str = "image.png"
+    language: str = "en"
 
 class DeepfakeRequest(BaseModel):
     file: str
@@ -368,13 +372,30 @@ async def analyze_with_bert(text: str) -> dict:
         return {"score": 0.5, "label": "UNCERTAIN", "raw": None}
 
 # --- Groq LLM Analysis ---
-async def analyze_with_groq(text: str) -> dict:
+async def analyze_with_groq(text: str, language: str = "en") -> dict:
     """Analyze text using Groq LLaMA 3.1 70B for credibility assessment."""
     if not GROQ_API_KEY:
         return {"score": 0.5, "analysis": "Groq API key not configured"}
 
+    language_name = {
+        'en': 'English',
+        'yo': 'Yoruba',
+        'ha': 'Hausa',
+        'ig': 'Igbo'
+    }.get(language, 'English')
+
+    respond_language = language_name
+    if language != 'en':
+        respond_language = language_name
+
     try:
-        prompt = f"""You are an expert fact-checker for the VerifyIt platform, specializing in Nigerian news and information. Analyze the following text for credibility with special attention to Nigerian political, economic, and social contexts.
+        prompt = f"""You are an expert fact-checker for the VerifyIt platform, specializing in Nigerian news and information.
+It is currently the year 2026. Use the most current facts available as of 2026.
+Analyze the following text for credibility with a strong focus on Nigerian political, economic, and social contexts.
+
+The user query language is {language_name}. Provide your assessment in the same language as the user's selected query language.
+Do not respond in English unless the selected language is English.
+If the text is in {language_name} or the user selected {language_name}, answer fully in {language_name}.
 
 Rate the text on a scale of 0.0 to 1.0 where:
 - 0.0 = Definitely fake/misleading
@@ -388,6 +409,9 @@ Consider Nigerian-specific factors:
 - References to Nigerian institutions, companies, or public figures
 - Cultural and regional contexts within Nigeria
 
+If the claim may be outdated, uncertain, or lacks current evidence, state that clearly rather than inventing new facts.
+If you cannot verify a claim with 2026 knowledge, say it is uncertain or likely outdated instead of repeating old titles or positions.
+
 Provide your analysis in the following JSON format:
 {{
     "score": <float between 0.0 and 1.0>,
@@ -400,7 +424,7 @@ Provide your analysis in the following JSON format:
 Text to analyze:
 {text[:2000]}
 
-Respond ONLY with valid JSON."""
+Respond ONLY with valid JSON and in {respond_language}."""
 
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
@@ -443,7 +467,7 @@ Respond ONLY with valid JSON."""
         return {"score": 0.5, "analysis": f"Error: {str(e)}"}
 
 # --- Web Search Verification ---
-async def verify_with_web_search(text: str) -> dict:
+async def verify_with_web_search(text: str, language: str = "en") -> dict:
     """Cross-reference claims using DuckDuckGo search and Google News RSS."""
     sources = []
     web_score = 0.5
@@ -483,9 +507,17 @@ async def verify_with_web_search(text: str) -> dict:
 
             # Google News RSS - Nigeria focused
             try:
+                google_lang = "en-NG"
+                if language == 'yo':
+                    google_lang = 'en-NG'
+                elif language == 'ha':
+                    google_lang = 'en-NG'
+                elif language == 'ig':
+                    google_lang = 'en-NG'
+
                 rss_response = await client.get(
                     "https://news.google.com/rss/search",
-                    params={"q": f"{search_query} Nigeria", "hl": "en-NG", "gl": "NG", "ceid": "NG:en"},
+                    params={"q": f"{search_query} Nigeria", "hl": google_lang, "gl": "NG", "ceid": "NG:en"},
                     headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"},
                     follow_redirects=True
                 )
@@ -529,7 +561,7 @@ async def verify_with_web_search(text: str) -> dict:
     }
 
 # --- Gemini Vision Analysis ---
-async def analyze_image_with_gemini(image_base64: str, filename: str) -> dict:
+async def analyze_image_with_gemini(image_base64: str, filename: str, language: str = "en") -> dict:
     """Analyze image using Gemini 2.0 Flash Vision API."""
     api_key = get_next_gemini_key()
     if not api_key:
@@ -545,6 +577,13 @@ async def analyze_image_with_gemini(image_base64: str, filename: str) -> dict:
         }
         mime_type = mime_map.get(ext, 'image/png')
 
+        language_name = {
+            'en': 'English',
+            'yo': 'Yoruba',
+            'ha': 'Hausa',
+            'ig': 'Igbo'
+        }.get(language, 'English')
+
         payload = {
             "contents": [{
                 "parts": [
@@ -555,7 +594,13 @@ async def analyze_image_with_gemini(image_base64: str, filename: str) -> dict:
                         }
                     },
                     {
-                        "text": """You are an expert fact-checker for the VerifyIt platform, specializing in Nigerian news and information. Analyze this image for credibility with attention to Nigerian contexts.
+                        "text": f"""You are an expert fact-checker for the VerifyIt platform, specializing in Nigerian news and information.
+It is currently the year 2026. Use the most current facts available as of 2026.
+Analyze this image for credibility with attention to Nigerian contexts.
+
+The user query language is {language_name}. Provide your reasoning in the same language as the user's selected query language.
+Do not reply in English unless the selected language is English.
+If this image contains text in a local Nigerian language or the selected language is {language_name}, answer fully in {language_name}.
 
 If the image contains text (news article, social media post, etc.), evaluate the claims made, especially regarding:
 - Nigerian politics, government, or public figures
@@ -565,16 +610,18 @@ If the image contains text (news article, social media post, etc.), evaluate the
 
 If the image is a photo, assess whether it appears authentic or manipulated, considering Nigerian cultural contexts.
 
+If the claim refers to officeholders or roles, verify the current office as of 2026 and do not repeat outdated titles from before 2024.
+
 Respond in this JSON format:
-{
+{{
     "score": <float 0.0-1.0 credibility rating>,
     "reasoning": "<explanation>",
     "extracted_text": "<any text found in the image>",
     "manipulation_indicators": ["<list of signs of manipulation>"],
     "nigerian_context": "<any relevant Nigerian context>"
-}
+}}
 
-Respond ONLY with valid JSON."""
+Respond ONLY with valid JSON and in {language_name}."""
                     }
                 ]
             }],
@@ -620,6 +667,130 @@ Respond ONLY with valid JSON."""
     except Exception as e:
         print(f"Gemini analysis error: {e}")
         return {"score": 0.5, "analysis": f"Error: {str(e)}"}
+
+async def extract_text_with_gemini(image_base64: str, filename: str, language: str = "en") -> str:
+    """Fallback text extraction using Gemini Vision if OCR fails."""
+    api_key = get_next_gemini_key()
+    if not api_key:
+        return ""
+
+    try:
+        ext = filename.lower().split('.')[-1] if '.' in filename else 'png'
+        mime_map = {
+            'jpg': 'image/jpeg', 'jpeg': 'image/jpeg',
+            'png': 'image/png', 'gif': 'image/gif', 'webp': 'image/webp'
+        }
+        mime_type = mime_map.get(ext, 'image/png')
+
+        language_name = {
+            'en': 'English',
+            'yo': 'Yoruba',
+            'ha': 'Hausa',
+            'ig': 'Igbo'
+        }.get(language, 'English')
+
+        payload = {
+            "contents": [{
+                "parts": [
+                    {
+                        "inline_data": {
+                            "mime_type": mime_type,
+                            "data": image_base64
+                        }
+                    },
+                    {
+                        "text": f"""You are an OCR assistant. Extract only the text from this image. The user query language is {language_name}. Return the extracted text as JSON only.
+If the image contains text, return it exactly as written. If no text is present, return an empty extracted_text string.
+
+Respond in this JSON format:
+{{
+    "extracted_text": "<text found in the image>"
+}}
+
+Respond ONLY with valid JSON and in {language_name}."""
+                    }
+                ]
+            }],
+            "generationConfig": {
+                "temperature": 0.0,
+                "maxOutputTokens": 800
+            }
+        }
+
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+                json=payload
+            )
+
+            if response.status_code == 429:
+                cooldown_key(api_key, 60)
+                next_key = get_next_gemini_key()
+                if next_key and next_key != api_key:
+                    return await extract_text_with_gemini(image_base64, filename, language)
+                return ""
+
+            if response.status_code == 200:
+                data = response.json()
+                content = ''
+                try:
+                    candidates = data.get('candidates', [])
+                    for candidate in candidates:
+                        for part in candidate.get('content', []):
+                            if isinstance(part, dict):
+                                content += part.get('text', '')
+                            elif isinstance(part, str):
+                                content += part
+                except Exception:
+                    pass
+
+                if not content:
+                    # Fallback for alternate Gemini response shapes
+                    try:
+                        content = data['candidates'][0]['content'][0]['text']
+                    except Exception:
+                        content = ''
+
+                if content:
+                    json_match = re.search(r'\{[\s\S]*\}', content)
+                    if json_match:
+                        try:
+                            result = json.loads(json_match.group())
+                            return result.get('extracted_text', '') or ''
+                        except json.JSONDecodeError:
+                            pass
+                    return content.strip()
+                return ""
+
+            return ""
+    except Exception as e:
+        print(f"Gemini OCR error: {e}")
+        return ""
+
+async def extract_text_with_google_vision(image_base64: str, filename: str, language: str = "en") -> str:
+    """Extract text from an image using Google Cloud Vision OCR."""
+    try:
+        from google.cloud import vision
+    except ImportError:
+        return ""
+
+    def sync_vision_ocr() -> str:
+        try:
+            image_bytes = base64.b64decode(image_base64)
+            client = vision.ImageAnnotatorClient()
+            image = vision.Image(content=image_bytes)
+            image_context = vision.ImageContext(language_hints=[language]) if language and language != 'en' else vision.ImageContext()
+            response = client.document_text_detection(image=image, image_context=image_context)
+            if response.error.message:
+                print(f"Google Vision OCR error: {response.error.message}")
+                return ""
+            return response.full_text_annotation.text if response.full_text_annotation and response.full_text_annotation.text else ""
+        except Exception as exc:
+            print(f"Google Vision OCR exception: {exc}")
+            return ""
+
+    text = await asyncio.to_thread(sync_vision_ocr)
+    return text.strip()
 
 # --- URL Content Extraction ---
 async def extract_content_from_url(url: str) -> dict:
@@ -669,8 +840,13 @@ async def extract_content_from_url(url: str) -> dict:
             }
     except Exception as e:
         return {"error": f"Error fetching URL: {str(e)}"}
-async def extract_text_with_ocr(image_base64: str, filename: str) -> str:
-    """Extract text from image using EasyOCR."""
+async def extract_text_with_ocr(image_base64: str, filename: str, language: str = "en") -> str:
+    """Extract text from image using Google Cloud Vision OCR with local fallback."""
+    # First try Google Cloud Vision OCR
+    vision_text = await extract_text_with_google_vision(image_base64, filename, language)
+    if vision_text:
+        return vision_text
+
     try:
         easyocr = __import__('easyocr')
         import numpy as np
@@ -679,20 +855,53 @@ async def extract_text_with_ocr(image_base64: str, filename: str) -> str:
 
         # Decode base64 to image
         image_bytes = base64.b64decode(image_base64)
-        image = Image.open(io.BytesIO(image_bytes))
+        image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
         image_array = np.array(image)
 
-        # Initialize reader (lazy load)
-        reader = easyocr.Reader(['en'], gpu=False)
-        results = reader.readtext(image_array)
+        # Use requested language when supported, otherwise fall back to English
+        reader_languages = ['en']
+        if language and language != 'en':
+            reader_languages.insert(0, language)
 
-        extracted_text = ' '.join([text for (bbox, text, prob) in results if prob > 0.3])
-        return extracted_text.strip()
+        try:
+            reader = easyocr.Reader(reader_languages, gpu=False)
+            results = reader.readtext(image_array)
+        except Exception:
+            reader = easyocr.Reader(['en'], gpu=False)
+            results = reader.readtext(image_array)
+
+        extracted_text = ''
+        if results:
+            if isinstance(results[0], str):
+                extracted_text = ' '.join([text for text in results if text.strip()]).strip()
+            else:
+                extracted_text = ' '.join([text for (_bbox, text, prob) in results if text.strip() and prob >= 0.1]).strip()
+
+        if extracted_text:
+            return extracted_text
+
+        # Retry with detail=0 in case the default format failed
+        try:
+            detail0 = reader.readtext(image_array, detail=0)
+            if detail0:
+                if isinstance(detail0[0], str):
+                    extracted_text = ' '.join([text for text in detail0 if text.strip()]).strip()
+                else:
+                    extracted_text = ' '.join([str(item).strip() for item in detail0 if str(item).strip()])
+        except Exception:
+            extracted_text = ''
+
+        if extracted_text:
+            return extracted_text
+
+        # If EasyOCR returned no text, fall back to Gemini OCR
+        gemini_text = await extract_text_with_gemini(image_base64, filename, language)
+        return gemini_text.strip()
 
     except ImportError:
         # Fallback to Gemini for text extraction
-        gemini_result = await analyze_image_with_gemini(image_base64, filename)
-        return gemini_result.get('extracted_text', '')
+        gemini_result = await extract_text_with_gemini(image_base64, filename, language)
+        return gemini_result.strip()
     except Exception as e:
         print(f"OCR extraction error: {e}")
         return ""
@@ -773,40 +982,105 @@ def detect_deepfake_media(file_base64: str, filename: str, media_type: Optional[
     }
 
 
+def localize_explanation_message(key: str, language: str = 'en', extra: str = '') -> str:
+    translations = {
+        'video_lipsync': {
+            'en': 'This video shows lip-sync inconsistencies that are common in deepfake content.',
+            'yo': 'Fidio yi fihan ailagbara ibamu ahia ẹnu ti o wọpọ ninu akoonu deepfake.',
+            'ha': 'Wannan bidiyo ya nuna rashin daidaiton lip-sync da aka saba gani a cikin abun deepfake.',
+            'ig': 'Vidiyo ahụ na-egosi ọdịda lip-sync nke a na-ahụkarị na ọdịnaya deepfake.'
+        },
+        'audio_voice_cloning': {
+            'en': 'The audio contains voice cloning indicators such as repeated cadence and unnatural tone shifts.',
+            'yo': 'Ohùn náà ní àmì ìfọmọ́ ohùn bíi ìtẹ̀sí padà àti ìyí padà ti kò tọ́.',
+            'ha': 'Sauti tana dauke da alamomin kwaikwaiyon murya kamar maimaita salo da canje-canje marasa dabi.',
+            'ig': 'Ọgụgụ olu nwere ihe ngosi nke okike olu dịka ụda na-adịkwa ugboro ugboro na mgbanwe ụda na-adịghị eke.'
+        },
+        'red_flag': {
+            'en': 'Red flag detected: {flag}.',
+            'yo': 'A rí àmì ìkìlọ̀ pupa: {flag}.',
+            'ha': 'An gano jan ƙala: {flag}.',
+            'ig': 'Achọpụtara akara uhie: {flag}.'
+        },
+        'manipulation_indicator': {
+            'en': 'Image analysis found manipulation indicator: {indicator}.',
+            'yo': 'Ìtúpalẹ̀ aworan rí àmì iṣàkóso: {indicator}.',
+            'ha': 'Binciken hoto ya gano alamar sarrafawa: {indicator}.',
+            'ig': 'Nyocha onyonyo hụrụ akara ngosi mmegharị: {indicator}.'
+        },
+        'sensational_headlines': {
+            'en': 'This article uses sensational headlines.',
+            'yo': 'Àpilẹ̀kọ yìí lo akọle tí ó jẹ́ kó rí bí ìròyìn ńlá.',
+            'ha': "Wannan labarin yana amfani da manyan kanun labarai masu ban sha'awa.",
+            'ig': 'Akụkọ a na-eji isiokwu na-eme ka ọ dị egwu.'
+        },
+        'no_trusted_source': {
+            'en': 'No trusted source was found for this claim.',
+            'yo': 'Kò sí orísun tó gbẹkẹle tí a rí fún ẹ̀sùn yìí.',
+            'ha': 'Ba a sami amintaccen tushe ba don wannan ikirari.',
+            'ig': 'Enweghị isi iyi a pụrụ ịdabere na ya maka nkwupụta a.'
+        },
+        'no_verified_sources': {
+            'en': 'The claim could not be verified against trusted sources.',
+            'yo': 'A kò lè jẹ́risi ẹ̀sùn náà lòdì sí àwọn orísun tó gbẹkẹle.',
+            'ha': 'Ba a iya tantance ikirari ɗin da tushe masu aminci ba.',
+            'ig': 'A naghị enweta ike ịlele nkwupụta ahụ megide isi iyi a pụrụ ịdabere na ya.'
+        },
+        'fake_media': {
+            'en': 'The content was flagged because it matches multiple indicators of synthetic or misleading media.',
+            'yo': 'A fi ami sí akoonu náà nitori pé ó ba ọpọlọpọ ami ìfihàn ti media tí a ṣe tàbí tí ó n tan lórí mu mu.',
+            'ha': 'An sanya alamar abun ciki saboda ya dace da alamomin yawa na kafofin watsa labarai na ƙarya ko masu rudani.',
+            'ig': 'Ederede ahụ nwere akara ngosi nke mgbasa ozi mebere ma ọ bụ na-akpagbu.'
+        },
+        'generic_empty': {
+            'en': 'The AI explanation engine did not identify a specific reason, but the content was still analyzed for credibility signals.',
+            'yo': 'Ẹrọ ìtúpalẹ̀ AI kò rí ìdí pàtó, ṣùgbọ́n a ṣi ṣe àyẹ̀wò akoonu fún àmì ìmúlòlùfẹ́.',
+            'ha': 'Injin bayanin AI bai gano takamaiman dalili ba, amma an binciki abun ciki don alamomin gaskiya.',
+            'ig': "Ngwa AI na-anaghị achọpụta ihe kpatara ya n'ụzọ doro anya, ma e nyochalere ọdịnaya maka akara nkwenye."
+        }
+    }
+    template = translations.get(key, {}).get(language, translations.get(key, {}).get('en', ''))
+    if extra:
+        return template.replace('{flag}', extra).replace('{indicator}', extra)
+    return template
+
+
 def build_explanation_statements(score: float, verdict: str, reasoning: str = '', sources: Optional[list] = None,
                                  red_flags: Optional[list] = None, manipulation_indicators: Optional[list] = None,
-                                 detection_details: Optional[list] = None, media_type: Optional[str] = None) -> list:
+                                 detection_details: Optional[list] = None, media_type: Optional[str] = None,
+                                 language: str = 'en') -> list:
     explanations = []
 
     if detection_details:
         for detail in detection_details:
             if 'Lip-sync' in detail:
-                explanations.append('This video shows lip-sync inconsistencies that are common in deepfake content.')
+                explanations.append(localize_explanation_message('video_lipsync', language))
             elif 'Voice cloning' in detail:
-                explanations.append('The audio contains voice cloning indicators such as repeated cadence and unnatural tone shifts.')
+                explanations.append(localize_explanation_message('audio_voice_cloning', language))
             else:
                 explanations.append(detail + '.')
 
     if red_flags:
-        explanations.extend([f'Red flag detected: {flag}.' for flag in red_flags])
+        explanations.extend([localize_explanation_message('red_flag', language, flag) for flag in red_flags])
 
     if manipulation_indicators:
-        explanations.extend([f'Image analysis found manipulation indicator: {indicator}.' for indicator in manipulation_indicators])
+        explanations.extend([localize_explanation_message('manipulation_indicator', language, indicator)
+                             for indicator in manipulation_indicators])
 
     if reasoning:
-        if 'sensational' in reasoning.lower() and 'This article uses sensational headlines.' not in explanations:
-            explanations.append('This article uses sensational headlines.')
-        if 'trusted' in reasoning.lower() and 'No trusted source was found for this claim.' not in explanations:
-            explanations.append('No trusted source was found for this claim.')
+        if 'sensational' in reasoning.lower() and localize_explanation_message('sensational_headlines', language) not in explanations:
+            explanations.append(localize_explanation_message('sensational_headlines', language))
+        if 'trusted' in reasoning.lower() and localize_explanation_message('no_trusted_source', language) not in explanations:
+            explanations.append(localize_explanation_message('no_trusted_source', language))
 
     if sources is not None and len(sources) == 0:
-        explanations.append('The claim could not be verified against trusted sources.')
+        explanations.append(localize_explanation_message('no_verified_sources', language))
 
     if verdict and 'fake' in verdict.lower() and not any('fake' in item.lower() or 'misleading' in item.lower() for item in explanations):
-        explanations.append('The content was flagged because it matches multiple indicators of synthetic or misleading media.')
+        explanations.append(localize_explanation_message('fake_media', language))
 
     if not explanations:
-        explanations.append('The AI explanation engine did not identify a specific reason, but the content was still analyzed for credibility signals.')
+        explanations.append(localize_explanation_message('generic_empty', language))
 
     return explanations
 
@@ -893,7 +1167,11 @@ async def logout(current_user: User = Depends(get_current_user)):
 async def root():
     """Serve the main application page."""
     from fastapi.responses import FileResponse
-    return FileResponse(os.path.join(FRONTEND_DIR, "home.html"), media_type="text/html")
+    response = FileResponse(os.path.join(FRONTEND_DIR, "home.html"), media_type="text/html")
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 @app.post("/check")
 async def check_text(request: TextRequest, current_user: User = Depends(get_current_user)):
@@ -905,8 +1183,8 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
     if len(text) < 10:
         raise HTTPException(status_code=400, detail="Text too short for meaningful analysis (minimum 10 characters)")
 
-    # Check cache
-    cache_key = get_cache_key(text)
+    # Check cache using text and language
+    cache_key = get_cache_key(f"{request.language}:{text}")
     cached = get_cached_result(cache_key)
     if cached:
         return cached
@@ -914,8 +1192,8 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
     # Run all analyses concurrently
     import asyncio
     bert_task = analyze_with_bert(text)
-    groq_task = analyze_with_groq(text)
-    web_task = verify_with_web_search(text)
+    groq_task = analyze_with_groq(text, request.language)
+    web_task = verify_with_web_search(text, request.language)
 
     bert_result, groq_result, web_result = await asyncio.gather(
         bert_task, groq_task, web_task
@@ -938,7 +1216,8 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
         groq_result.get('red_flags', []),
         [],
         None,
-        None
+        None,
+        request.language
     )
 
     result = {
@@ -975,12 +1254,12 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
         raise HTTPException(status_code=400, detail="No image data provided")
 
     # Step 1: Analyze image with Gemini Vision
-    gemini_result = await analyze_image_with_gemini(request.image, request.filename)
+    gemini_result = await analyze_image_with_gemini(request.image, request.filename, request.language)
 
     # Step 2: Try OCR extraction
     extracted_text = ""
     try:
-        extracted_text = await extract_text_with_ocr(request.image, request.filename)
+        extracted_text = await extract_text_with_ocr(request.image, request.filename, request.language)
     except Exception as e:
         print(f"OCR fallback: {e}")
         extracted_text = gemini_result.get('extracted_text', '')
@@ -995,8 +1274,8 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
     if extracted_text and len(extracted_text) > 20:
         import asyncio
         bert_task = analyze_with_bert(extracted_text)
-        groq_task = analyze_with_groq(extracted_text)
-        web_task = verify_with_web_search(extracted_text)
+        groq_task = analyze_with_groq(extracted_text, request.language)
+        web_task = verify_with_web_search(extracted_text, request.language)
 
         bert_result, groq_result, web_result = await asyncio.gather(
             bert_task, groq_task, web_task
@@ -1026,7 +1305,8 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
         [],
         gemini_result.get('manipulation_indicators', []),
         gemini_result.get('manipulation_indicators', []),
-        None
+        None,
+        request.language
     )
 
     result = {
@@ -1067,7 +1347,8 @@ async def check_deepfake(request: DeepfakeRequest, current_user: User = Depends(
         [],
         [],
         deepfake_result.get('detection_details', []),
-        deepfake_result.get('media_type')
+        deepfake_result.get('media_type'),
+        'en'
     )
 
     result = {
@@ -1094,12 +1375,11 @@ async def extract_text(request: ImageRequest, current_user: User = Depends(get_c
     if not request.image:
         raise HTTPException(status_code=400, detail="No image data provided")
 
-    extracted_text = await extract_text_with_ocr(request.image, request.filename)
+    extracted_text = await extract_text_with_ocr(request.image, request.filename, request.language)
 
     if not extracted_text:
-        # Fallback to Gemini
-        gemini_result = await analyze_image_with_gemini(request.image, request.filename)
-        extracted_text = gemini_result.get('extracted_text', '')
+        # Fallback to Gemini OCR extraction
+        extracted_text = await extract_text_with_gemini(request.image, request.filename, request.language)
 
     return {
         "text": extracted_text,
@@ -1133,8 +1413,8 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
     # Combine title and content for analysis
     full_text = f"{title}\n\n{content}".strip()
 
-    # Check cache
-    cache_key = get_cache_key(full_text)
+    # Check cache using content and language
+    cache_key = get_cache_key(f"{request.language}:{full_text}")
     cached = get_cached_result(cache_key)
     if cached:
         cached['title'] = title
@@ -1144,8 +1424,8 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
     # Run analyses
     import asyncio
     bert_task = analyze_with_bert(full_text)
-    groq_task = analyze_with_groq(full_text)
-    web_task = verify_with_web_search(full_text)
+    groq_task = analyze_with_groq(full_text, request.language)
+    web_task = verify_with_web_search(full_text, request.language)
 
     bert_result, groq_result, web_result = await asyncio.gather(
         bert_task, groq_task, web_task
@@ -1385,7 +1665,19 @@ async def health_check():
     }
 
 # --- Static Files ---
-app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
+app.mount(
+    "/",
+    StaticFiles(
+        directory=FRONTEND_DIR,
+        html=True,
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    ),
+    name="static"
+)
 
 # --- Run ---
 if __name__ == "__main__":
