@@ -143,5 +143,19 @@
       "sources_count": 5,
       "red_flags_count": 3
     }
+  },
+  {
+    "id": 11,
+    "type": "image",
+    "content": "new.png",
+    "score": 46.0,
+    "verdict": "Uncertain",
+    "user": "Kore",
+    "timestamp": "2026-05-27T08:26:18.660669",
+    "metadata": {
+      "extracted_text_length": 215,
+      "manipulation_indicators": 0,
+      "sources_count": 5
+    }
   }
 ]
