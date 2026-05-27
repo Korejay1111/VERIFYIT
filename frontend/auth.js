@@ -3,7 +3,7 @@
    Handles user authentication, tokens, and session management
    ============================================================ */
 
-const API_BASE_URL = 'https://verifyit-3.onrender.com';
+const API_BASE_URL = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://127.0.0.1:8000';
 const TOKEN_KEY = 'verifyit-token';
 const USER_KEY = 'verifyit-user';
 

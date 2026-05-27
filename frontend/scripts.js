@@ -59,7 +59,7 @@ function initCharCount() {
   });
 }
 
-const BASE_API_URL = 'https://verifyit-3.onrender.com';
+const BASE_API_URL = (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://127.0.0.1:8000';
 
 // --- Image Upload ---
 function initImageUpload() {
