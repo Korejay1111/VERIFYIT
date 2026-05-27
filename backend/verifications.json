@@ -111,5 +111,37 @@
       "media_type": "video",
       "detection_details_count": 2
     }
+  },
+  {
+    "id": 9,
+    "type": "text",
+    "content": "The senator representing Oyo South Senatorial District in the National Assembly, Sarafadeen Alli, has won the Oyo State APC gubernatorial primary election .\n\nAlli, who polled 578,143 votes, was followed by Senator Buhari with 37,265 votes, while former minister of Power, Oloye Bayo Adelabu, secured 19,193 votes.\n\nMeanwhile, the Okanlomo Odua/Bada Olubadan, Dotun Sanusi, has congratulated Alli on his landslide victory.",
+    "score": 46.0,
+    "verdict": "Uncertain",
+    "user": "Kore",
+    "timestamp": "2026-05-27T08:01:47.190817",
+    "metadata": {
+      "bert_score": 50.0,
+      "llm_score": 50.0,
+      "web_score": 40.0,
+      "sources_count": 5,
+      "red_flags_count": 3
+    }
+  },
+  {
+    "id": 10,
+    "type": "text",
+    "content": "The senator representing Oyo South Senatorial District in the National Assembly, Sarafadeen Alli, has won the Oyo State APC gubernatorial primary election .\n\nAlli, who polled 578,143 votes, was followed by Senator Buhari with 37,265 votes, while former minister of Power, Oloye Bayo Adelabu, secured 19,193 votes.\n\nMeanwhile, the Okanlomo Odua/Bada Olubadan, Dotun Sanusi, has congratulated Alli on his landslide victory.",
+    "score": 46.0,
+    "verdict": "Uncertain",
+    "user": "Kore",
+    "timestamp": "2026-05-27T08:02:59.625275",
+    "metadata": {
+      "bert_score": 50.0,
+      "llm_score": 50.0,
+      "web_score": 40.0,
+      "sources_count": 5,
+      "red_flags_count": 3
+    }
   }
 ]
