@@ -111,7 +111,7 @@ app.add_middleware(
     allow_origins=[
         "https://verifyit-3.onrender.com",
     ],
-    allow_credentials=False,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
