@@ -190,6 +190,9 @@
       e.preventDefault();
       await handleLogin();
     });
+    function initTheme() {
+    console.log("Theme initialized");
+}
 
     async function handleLogin() {
       const username = document.getElementById('username').value.trim();
@@ -248,9 +251,7 @@
     }
 
     // Initialize theme
-    function initTheme() {
-  console.log("Theme initialized");
-}
+    
     initTheme?.();
     initThemeSelector?.();
   </script>
