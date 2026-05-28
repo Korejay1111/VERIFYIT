@@ -110,8 +110,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
          "https://verifyit-3.onrender.com",
-        "https://https://verifyit-ten.vercel.app/home.html",
-        
+        "https://https://verifyit-ten.vercel.app",
+        "https://verifyit-ten.vercel.app/home.html",
         "http://localhost:8000",
         "http://127.0.0.1:5500",
         "https://verifyit-3.onrender.com",
