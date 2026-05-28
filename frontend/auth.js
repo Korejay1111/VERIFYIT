@@ -84,7 +84,7 @@ async function verifyToken() {
 
   try {
     const response = await fetch(`${API_BASE_URL}/auth/me`, {
-      method: 'GET',
+      method: 'POST',
       headers: getAuthHeaders()
     });
 
