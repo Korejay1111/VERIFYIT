@@ -26,7 +26,7 @@ payload = {
 }
 
 try:
-    r = requests.post('http://127.0.0.1:8000/extract-text', json=payload, timeout=30)
+    r = requests.post('https://verifyit-3.onrender.com/extract-text', json=payload, timeout=30)
     print('STATUS', r.status_code)
     print(r.text)
 except Exception as e:

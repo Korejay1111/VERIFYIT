@@ -2,7 +2,7 @@ import base64
 import requests
 from pathlib import Path
 
-BASE = 'http://127.0.0.1:8000'
+BASE = 'https://verifyit-3.onrender.com'
 IMAGE_PATH = Path(__file__).resolve().parent.parent / 'VerifyIT.png'
 
 if not IMAGE_PATH.exists():

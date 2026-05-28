@@ -3,7 +3,7 @@ import io
 import requests
 from PIL import Image, ImageDraw, ImageFont
 
-BASE='http://127.0.0.1:8000'
+BASE='https://verifyit-3.onrender.com'
 
 # Create sample image with clear text
 img = Image.new('RGB', (700, 140), 'white')
