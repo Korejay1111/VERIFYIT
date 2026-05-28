@@ -340,10 +340,14 @@
 
       try {
         const response = await fetch(`${API_BASE_URL}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, username, password })
-        });
+        method: 'POST',
+        headers: {
+         'Content-Type': 'application/json'
+        },
+        credentials: 'include',
+         body: JSON.stringify({ username, password })
+      });
+       
 
         const data = await response.json();
 
