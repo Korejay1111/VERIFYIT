@@ -339,13 +339,11 @@
       loading.style.display = 'block';
 
       try {
-        const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-         'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-         body: JSON.stringify({ username, password })
+        const response = await fetch(`${API_BASE_URL}/auth/register`, { 
+        method: 'POST', 
+        headers: { 
+          'Content-Type': 'application/json' }, 
+       body: JSON.stringify({ username, password }) 
       });
        
 
