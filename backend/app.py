@@ -111,8 +111,7 @@ app.add_middleware(
     allow_origins=[
          "https://verifyit-3.onrender.com",
         "https://verifyit-ten.vercel.app",
-        "http://localhost:8000",
-        "http://127.0.0.1:5500",
+        
         "https://verifyit-3.onrender.com",
         "https://verifyit-ten.vercel.app",
     ],
