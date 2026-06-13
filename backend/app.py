@@ -347,6 +347,13 @@ def get_next_gemini_key() -> Optional[str]:
 def cooldown_key(key: str, seconds: int = 30):
     key_cooldowns[key] = time.time() + seconds
 
+async def safe_model_call(coro, default_value, label: str, timeout_seconds: int = 15):
+    try:
+        return await asyncio.wait_for(coro, timeout=timeout_seconds)
+    except Exception as exc:
+        print(f"{label} fallback: {exc}")
+        return default_value
+
 # --- BERT Analysis ---
 async def analyze_with_bert(text: str) -> dict:
     """Analyze text using BERT fake news detection model via HuggingFace API."""
@@ -847,65 +854,29 @@ async def extract_content_from_url(url: str) -> dict:
     except Exception as e:
         return {"error": f"Error fetching URL: {str(e)}"}
 async def extract_text_with_ocr(image_base64: str, filename: str, language: str = "en") -> str:
-    """Extract text from image using Google Cloud Vision OCR with local fallback."""
-    # First try Google Cloud Vision OCR
-    vision_text = await extract_text_with_google_vision(image_base64, filename, language)
-    if vision_text:
-        return vision_text
-
+    """Extract text from image using Tesseract OCR with Gemini fallback."""
     try:
-        easyocr = __import__('easyocr')
-        import numpy as np
-        from PIL import Image
         import io
+        from PIL import Image
+        import pytesseract
 
-        # Decode base64 to image
         image_bytes = base64.b64decode(image_base64)
         image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-        image_array = np.array(image)
 
-        # Use requested language when supported, otherwise fall back to English
-        reader_languages = ['en']
-        if language and language != 'en':
-            reader_languages.insert(0, language)
+        # The Render build script installs the tesseract binary, so use that path first.
+        extracted_text = await asyncio.to_thread(
+            pytesseract.image_to_string,
+            image,
+            lang='eng'
+        )
 
-        try:
-            reader = easyocr.Reader(reader_languages, gpu=False)
-            results = reader.readtext(image_array)
-        except Exception:
-            reader = easyocr.Reader(['en'], gpu=False)
-            results = reader.readtext(image_array)
+        if extracted_text and extracted_text.strip():
+            return extracted_text.strip()
 
-        extracted_text = ''
-        if results:
-            if isinstance(results[0], str):
-                extracted_text = ' '.join([text for text in results if text.strip()]).strip()
-            else:
-                extracted_text = ' '.join([text for (_bbox, text, prob) in results if text.strip() and prob >= 0.1]).strip()
-
-        if extracted_text:
-            return extracted_text
-
-        # Retry with detail=0 in case the default format failed
-        try:
-            detail0 = reader.readtext(image_array, detail=0)
-            if detail0:
-                if isinstance(detail0[0], str):
-                    extracted_text = ' '.join([text for text in detail0 if text.strip()]).strip()
-                else:
-                    extracted_text = ' '.join([str(item).strip() for item in detail0 if str(item).strip()])
-        except Exception:
-            extracted_text = ''
-
-        if extracted_text:
-            return extracted_text
-
-        # If EasyOCR returned no text, fall back to Gemini OCR
         gemini_text = await extract_text_with_gemini(image_base64, filename, language)
         return gemini_text.strip()
 
     except ImportError:
-        # Fallback to Gemini for text extraction
         gemini_result = await extract_text_with_gemini(image_base64, filename, language)
         return gemini_result.strip()
     except Exception as e:
@@ -1195,11 +1166,25 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
     if cached:
         return cached
 
-    # Run all analyses concurrently
-    import asyncio
-    bert_task = analyze_with_bert(text)
-    groq_task = analyze_with_groq(text, request.language)
-    web_task = verify_with_web_search(text, request.language)
+    # Run all analyses concurrently, but keep each dependency on a short leash.
+    bert_task = safe_model_call(
+        analyze_with_bert(text),
+        {"score": 0.5, "label": "UNCERTAIN", "raw": None},
+        "BERT",
+        12
+    )
+    groq_task = safe_model_call(
+        analyze_with_groq(text, request.language),
+        {"score": 0.5, "analysis": "Groq analysis unavailable", "red_flags": []},
+        "Groq",
+        15
+    )
+    web_task = safe_model_call(
+        verify_with_web_search(text, request.language),
+        {"score": 0.5, "sources": []},
+        "Web search",
+        12
+    )
 
     bert_result, groq_result, web_result = await asyncio.gather(
         bert_task, groq_task, web_task
@@ -1260,7 +1245,12 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
         raise HTTPException(status_code=400, detail="No image data provided")
 
     # Step 1: Analyze image with Gemini Vision
-    gemini_result = await analyze_image_with_gemini(request.image, request.filename, request.language)
+    gemini_result = await safe_model_call(
+        analyze_image_with_gemini(request.image, request.filename, request.language),
+        {"score": 0.5, "analysis": "Gemini vision unavailable", "extracted_text": "", "manipulation_indicators": []},
+        "Gemini vision",
+        20
+    )
 
     # Step 2: Try OCR extraction
     extracted_text = ""
@@ -1278,10 +1268,24 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
     sources = []
 
     if extracted_text and len(extracted_text) > 20:
-        import asyncio
-        bert_task = analyze_with_bert(extracted_text)
-        groq_task = analyze_with_groq(extracted_text, request.language)
-        web_task = verify_with_web_search(extracted_text, request.language)
+        bert_task = safe_model_call(
+            analyze_with_bert(extracted_text),
+            {"score": 0.5, "label": "UNCERTAIN", "raw": None},
+            "BERT",
+            12
+        )
+        groq_task = safe_model_call(
+            analyze_with_groq(extracted_text, request.language),
+            {"score": 0.5, "analysis": "Groq analysis unavailable", "red_flags": []},
+            "Groq",
+            15
+        )
+        web_task = safe_model_call(
+            verify_with_web_search(extracted_text, request.language),
+            {"score": 0.5, "sources": []},
+            "Web search",
+            12
+        )
 
         bert_result, groq_result, web_result = await asyncio.gather(
             bert_task, groq_task, web_task
@@ -1381,11 +1385,21 @@ async def extract_text(request: ImageRequest, current_user: User = Depends(get_c
     if not request.image:
         raise HTTPException(status_code=400, detail="No image data provided")
 
-    extracted_text = await extract_text_with_ocr(request.image, request.filename, request.language)
+    extracted_text = await safe_model_call(
+        extract_text_with_ocr(request.image, request.filename, request.language),
+        "",
+        "OCR",
+        15
+    )
 
     if not extracted_text:
         # Fallback to Gemini OCR extraction
-        extracted_text = await extract_text_with_gemini(request.image, request.filename, request.language)
+        extracted_text = await safe_model_call(
+            extract_text_with_gemini(request.image, request.filename, request.language),
+            "",
+            "Gemini OCR",
+            15
+        )
 
     return {
         "text": extracted_text,
