@@ -857,21 +857,61 @@ async def extract_text_with_ocr(image_base64: str, filename: str, language: str 
     """Extract text from image using Tesseract OCR with Gemini fallback."""
     try:
         import io
-        from PIL import Image
+        from PIL import Image, ImageEnhance, ImageOps
         import pytesseract
 
         image_bytes = base64.b64decode(image_base64)
         image = Image.open(io.BytesIO(image_bytes)).convert('RGB')
 
-        # The Render build script installs the tesseract binary, so use that path first.
-        extracted_text = await asyncio.to_thread(
-            pytesseract.image_to_string,
-            image,
-            lang='eng'
-        )
+        # Try a few lightweight preprocessing variants before falling back.
+        grayscale = ImageOps.grayscale(image)
+        high_contrast = ImageEnhance.Contrast(grayscale).enhance(2.0)
 
-        if extracted_text and extracted_text.strip():
-            return extracted_text.strip()
+        target_width = 1800
+        if image.width < target_width:
+            scale = target_width / float(image.width)
+            resized = image.resize((target_width, int(image.height * scale)))
+            grayscale_resized = ImageOps.grayscale(resized)
+            high_contrast_resized = ImageEnhance.Contrast(grayscale_resized).enhance(2.0)
+        else:
+            resized = image
+            grayscale_resized = grayscale
+            high_contrast_resized = high_contrast
+
+        variants = [
+            (image, "--oem 3 --psm 6"),
+            (grayscale, "--oem 3 --psm 6"),
+            (high_contrast, "--oem 3 --psm 6"),
+            (grayscale_resized, "--oem 3 --psm 11"),
+            (high_contrast_resized, "--oem 3 --psm 11"),
+        ]
+
+        for candidate_image, config in variants:
+            extracted_text = await asyncio.to_thread(
+                pytesseract.image_to_string,
+                candidate_image,
+                lang='eng',
+                config=config
+            )
+            if extracted_text and extracted_text.strip():
+                return extracted_text.strip()
+
+        try:
+            easyocr = __import__('easyocr')
+            import numpy as np
+
+            image_array = np.array(resized)
+            reader = easyocr.Reader(['en'], gpu=False)
+            results = await asyncio.to_thread(reader.readtext, image_array)
+            if results:
+                extracted_text = ' '.join(
+                    text for (_bbox, text, prob) in results
+                    if text and text.strip() and prob >= 0.1
+                ).strip()
+                if extracted_text:
+                    return extracted_text
+        except Exception as ocr_fallback_error:
+            print(f"EasyOCR fallback error: {ocr_fallback_error}")
 
         gemini_text = await extract_text_with_gemini(image_base64, filename, language)
         return gemini_text.strip()

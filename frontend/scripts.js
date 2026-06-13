@@ -1247,7 +1247,7 @@ async function extractTextFromImage() {
       resultsDiv.innerHTML = `
         <div class="loading-overlay">
           <div style="font-size: 2rem; margin-bottom: 0.5rem;">📭</div>
-          <div class="loading-text">No text could be extracted from this image.</div>
+          <div class="loading-text">No readable text could be extracted. Try a clearer image or crop closer to the text.</div>
         </div>
       `;
       showToast('No text found in the image.', 'warning');
