@@ -245,6 +245,11 @@
 
   <script src="auth.js?v=2"></script>
   <script>
+    function initTheme() {
+      const saved = localStorage.getItem('verifyit-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+    }
+
     const passwordInput = document.getElementById('password');
     const strengthMeter = document.getElementById('strengthMeter');
     const strengthText = document.getElementById('strengthText');
@@ -343,7 +348,7 @@
         method: 'POST', 
         headers: { 
           'Content-Type': 'application/json' }, 
-       body: JSON.stringify({ username, password }) 
+       body: JSON.stringify({ email, username, password }) 
       });
        
 
@@ -378,8 +383,10 @@
     }
 
     // Initialize theme
-    initTheme?.();
-    initThemeSelector?.();
+    initTheme();
+    if (typeof initThemeSelector === 'function') {
+      initThemeSelector();
+    }
   </script>
 </body>
 </html>
