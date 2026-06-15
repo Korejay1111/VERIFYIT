@@ -157,6 +157,31 @@ def save_users(users: dict):
     with open(USERS_DB_FILE, 'w') as f:
         json.dump(users, f, indent=2)
 
+def normalize_username(username: str) -> str:
+    """Normalize usernames before comparing or storing them."""
+    return username.strip()
+
+def find_user_record(users: dict, username: str):
+    """Find a user record using a trimmed, case-insensitive username match."""
+    lookup_username = normalize_username(username)
+    if not lookup_username:
+        return None, None
+
+    exact_match = users.get(lookup_username)
+    if exact_match:
+        return lookup_username, exact_match
+
+    lowered_lookup = lookup_username.lower()
+    for stored_username, stored_user in users.items():
+        if stored_username.lower() == lowered_lookup:
+            return stored_username, stored_user
+
+        stored_value = str(stored_user.get("username", "")).strip()
+        if stored_value.lower() == lowered_lookup:
+            return stored_username, stored_user
+
+    return None, None
+
 # --- Authentication Models ---
 class User(BaseModel):
     email: str
@@ -1107,13 +1132,19 @@ def build_explanation_statements(score: float, verdict: str, reasoning: str = ''
 async def register(user_data: UserRegister):
     """Register a new user."""
     users = load_users()
+    username = normalize_username(user_data.username)
+    email = user_data.email.strip()
+
+    if not username:
+        raise HTTPException(status_code=400, detail="Username is required")
     
     # Check if username exists
-    if user_data.username in users:
+    existing_username, _ = find_user_record(users, username)
+    if existing_username:
         raise HTTPException(status_code=400, detail="Username already exists")
     
     # Check if email exists
-    if any(u.get("email") == user_data.email for u in users.values()):
+    if any(u.get("email", "").lower() == email.lower() for u in users.values()):
         raise HTTPException(status_code=400, detail="Email already registered")
     
     # Validate password strength
@@ -1121,28 +1152,28 @@ async def register(user_data: UserRegister):
         raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
     
     # Create new user
-    users[user_data.username] = {
-        "email": user_data.email,
-        "username": user_data.username,
+    users[username] = {
+        "email": email,
+        "username": username,
         "password_hash": hash_password(user_data.password),
         "created_at": datetime.now(timezone.utc).isoformat(),
         "verification_history": []
     }
     
     save_users(users)
-    sync_supabase_user_record(user_data.username, user_data.email, action="register")
+    sync_supabase_user_record(username, email, action="register")
     
     # Create JWT token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user_data.username}, 
+        data={"sub": username}, 
         expires_delta=access_token_expires
     )
     
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": User(email=user_data.email, username=user_data.username)
+        "user": User(email=email, username=username)
     }
 
 @app.post("/auth/login", response_model=Token)
@@ -1151,23 +1182,24 @@ async def login(user_data: UserLogin):
     users = load_users()
     
     # Find user
-    user = users.get(user_data.username)
+    username, user = find_user_record(users, user_data.username)
     if not user or not verify_password(user_data.password, user.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Invalid username or password")
     
-    sync_supabase_user_record(user_data.username, user["email"], action="login")
+    canonical_username = user.get("username") or username or normalize_username(user_data.username)
+    sync_supabase_user_record(canonical_username, user["email"], action="login")
     
     # Create JWT token
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user_data.username},
+        data={"sub": canonical_username},
         expires_delta=access_token_expires
     )
     
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": User(email=user["email"], username=user["username"])
+        "user": User(email=user["email"], username=canonical_username)
     }
 
 @app.get("/auth/me", response_model=User)
