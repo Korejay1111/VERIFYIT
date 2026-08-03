@@ -1,6 +1,6 @@
 /* ============================================================
-   VerifyIt — Frontend JavaScript
-   AI-Powered Fake News Detection Platform
+  VerifyIt — Frontend JavaScript
+  AI-Powered Fake News Detection Platform
    ============================================================ */
 
 // --- Theme Management ---

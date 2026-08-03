@@ -3,6 +3,7 @@
 ## What Was Added
 
 ### Backend (Python/FastAPI)
+
 1. **JWT Authentication System**
    - Secure token generation and validation
    - 24-hour token expiration
@@ -45,6 +46,7 @@
    - Form validation
 
 ### Dependencies Added
+
 ```
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
@@ -55,7 +57,7 @@ pydantic[email]==2.5.0
 ## File Structure
 
 ```
-VERIFYIT/
+VerifyIt/
 ├── app.py                          (Updated)
 ├── auth.js                         (New)
 ├── index.html                      (Updated)
@@ -73,6 +75,7 @@ VERIFYIT/
 ## How It Works
 
 ### Registration Flow
+
 1. User fills out registration form (email, username, password)
 2. Frontend validates inputs
 3. API creates new user with bcrypt-hashed password
@@ -80,6 +83,7 @@ VERIFYIT/
 5. User redirected to home page
 
 ### Login Flow
+
 1. User enters username and password
 2. API verifies credentials against stored hash
 3. API generates JWT token
@@ -87,6 +91,7 @@ VERIFYIT/
 5. User redirected to home page
 
 ### Verification Flow
+
 1. User accesses verification page
 2. Frontend checks for valid token
 3. Token included in all API requests (Authorization header)
@@ -94,6 +99,7 @@ VERIFYIT/
 5. Invalid/expired token → redirect to login
 
 ### Logout Flow
+
 1. User clicks logout button
 2. Token removed from localStorage
 3. User redirected to login page
@@ -140,14 +146,14 @@ VERIFYIT/
 
 ## Key Technologies
 
-| Technology | Purpose |
-|-----------|---------|
-| FastAPI | Web framework (Python) |
-| PyJWT | JWT token creation/verification |
-| Passlib + Bcrypt | Password hashing |
-| HTTPBearer | Security scheme for tokens |
-| Pydantic | Request/response validation |
-| LocalStorage | Client-side token storage |
+| Technology       | Purpose                         |
+| ---------------- | ------------------------------- |
+| FastAPI          | Web framework (Python)          |
+| PyJWT            | JWT token creation/verification |
+| Passlib + Bcrypt | Password hashing                |
+| HTTPBearer       | Security scheme for tokens      |
+| Pydantic         | Request/response validation     |
+| LocalStorage     | Client-side token storage       |
 
 ## Testing Checklist
 
@@ -165,6 +171,7 @@ VERIFYIT/
 ## API Response Examples
 
 ### Successful Registration
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -177,6 +184,7 @@ VERIFYIT/
 ```
 
 ### Successful Login
+
 ```json
 {
   "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
@@ -189,6 +197,7 @@ VERIFYIT/
 ```
 
 ### Error Response (Unauthorized)
+
 ```json
 {
   "detail": "Invalid username or password"
@@ -212,17 +221,20 @@ VERIFYIT/
 ## Environment Configuration
 
 ### Development
+
 - `SECRET_KEY`: Auto-generated (random)
 - Server: `http://127.0.0.1:8000`
 - CORS: All origins allowed
 
 ### Production (Recommended)
+
 ```bash
 export SECRET_KEY="your-secure-secret-key-here"
 export API_BASE_URL="https://yourdomain.com"
 ```
 
 Update `app.py`:
+
 ```python
 app.add_middleware(
     CORSMiddleware,
@@ -271,6 +283,7 @@ app.add_middleware(
 ## Support
 
 For detailed information:
+
 - Authentication: See `AUTH_README.md`
 - Setup: See `SETUP_AUTH.md`
 - Code: Check comments in `app.py`, `auth.js`

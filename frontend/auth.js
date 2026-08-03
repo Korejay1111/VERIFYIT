@@ -1,6 +1,6 @@
 /* ============================================================
-   VerifyIt — Authentication Module
-   Handles user authentication, tokens, and session management
+  VerifyIt — Authentication Module
+  Handles user authentication, tokens, and session management
    ============================================================ */
 
 const API_BASE_URL = "https://verifyit-3.onrender.com"
