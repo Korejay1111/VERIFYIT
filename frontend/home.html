@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VerifyIt — Verify News</title>
+  <title>iConfam — Confirm News</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -92,16 +92,16 @@
     <div class="container">
       <a href="home.html" class="navbar-brand">
         <div class="brand-icon"><i class="fas fa-check"></i></div>
-        VerifyIt
+        iConfam
       </a>
 
       <ul class="navbar-links" id="navLinks">
-        <li><a href="home.html" class="active">Verify</a></li>
-        <li><a href="about.html">About</a></li>
+        <li><a href="home.html" class="active">Confam</a></li>
+        <li><a href="#about">About</a></li>
       </ul>
 
       <div class="navbar-actions">
-        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Verification History"><i class="fas fa-clipboard"></i></button>
+        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Confirmation History"><i class="fas fa-history"></i></button>
         
         <!-- User Profile Dropdown -->
         <div class="user-actions-wrapper">
@@ -130,10 +130,10 @@
           <span class="pulse-dot"></span>
           AI-Powered Verification
         </div>
-        <h1 data-i18n="hero_heading">Detect Fake News<br>with <span class="gradient-text">VerifyIt</span></h1>
+        <h1 data-i18n="hero_heading">Detect Fake News<br>with <span class="gradient-text">iConfam</span></h1>
         <p data-i18n="hero_paragraph">Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.</p>
         <div class="hero-buttons">
-          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Verifying <i class="fas fa-arrow-down"></i></a>
+          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Confirming <i class="fas fa-arrow-down"></i></a>
           <a href="#trending" class="btn btn-secondary btn-lg" data-i18n="hero_trending">Trending News</a>
         </div>
         <div class="hero-stats">
@@ -146,7 +146,7 @@
             <div class="stat-label">AI Models</div>
           </div>
           <div class="hero-stat">
-            <div class="stat-value"><5s</div>
+            <div class="stat-value"><5s></div>
             <div class="stat-label">Avg. Response</div>
           </div>
         </div>
@@ -157,16 +157,16 @@
   <!-- Verify Section -->
   <section class="verify-section" id="verify">
     <div class="container">
-      <h2 class="section-title" data-i18n="verify_title">Verify Your <span class="gradient-text">Content</span></h2>
-      <p class="section-subtitle" data-i18n="verify_subtitle">Choose your verification method below and get instant results.</p>
+      <h2 class="section-title" data-i18n="verify_title">Confirm Your <span class="gradient-text">Content</span></h2>
+      <p class="section-subtitle" data-i18n="verify_subtitle">Choose your confirmation method below and get instant results.</p>
 
       <div class="verify-grid">
-        <!-- Text Verification Card -->
+        <!-- Text Confirmation Card -->
         <div class="verify-card">
           <div class="card-header">
             <div class="card-icon"><i class="fas fa-file-alt"></i></div>
             <div>
-              <div class="card-title" data-i18n="text_card_title">Text Verification</div>
+              <div class="card-title" data-i18n="text_card_title">Text Confirmation</div>
               <div class="card-desc" data-i18n="text_card_desc">Paste an article or claim to analyze</div>
             </div>
           </div>
@@ -174,14 +174,14 @@
           <textarea
             class="verify-textarea"
             id="textInput"
-            placeholder="Paste the news article, headline, or claim you want to verify..."
+            placeholder="Paste the news article, headline, or claim you want to confirm..."
             maxlength="5000"
           ></textarea>
           <div class="char-count"><span id="charCount">0</span>/5000</div>
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
-              <i class="fas fa-search"></i> Verify Text
+              <i class="fas fa-search"></i> Confirm Text
             </button>
             <button class="btn btn-ghost" onclick="clearText()">Clear</button>
           </div>
@@ -195,7 +195,7 @@
           <div class="card-header">
             <div class="card-icon"><i class="fas fa-link"></i></div>
             <div>
-              <div class="card-title" data-i18n="url_card_title">URL Verification</div>
+              <div class="card-title" data-i18n="url_card_title">URL Confirmation</div>
               <div class="card-desc" data-i18n="url_card_desc">Enter a news article URL to analyze</div>
             </div>
           </div>
@@ -210,7 +210,7 @@
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
-              <i class="fas fa-search"></i> Verify URL
+              <i class="fas fa-search"></i> Confirm URL
             </button>
             <button class="btn btn-ghost" onclick="clearUrl()">Clear</button>
           </div>
@@ -243,7 +243,7 @@
 
           <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
             <button class="btn btn-primary" id="verifyImageBtn" onclick="verifyImage()">
-              <i class="fas fa-search"></i> Verify Image
+              <i class="fas fa-search"></i> Confirm Image
             </button>
             <button class="btn btn-ghost" onclick="extractTextFromImage()">
               <i class="fas fa-file"></i> Extract Text First
@@ -304,8 +304,8 @@
         <article class="feature-card whatsapp-card">
           <div class="feature-card-icon"><i class="fas fa-comment"></i></div>
           <h3 data-i18n="whatsapp_title">WhatsApp Verification Helper</h3>
-          <p data-i18n="whatsapp_desc">Generate a ready-made WhatsApp message to report or verify suspicious claims.</p>
-          <textarea id="whatsappClaimInput" class="verify-input" rows="4" placeholder="Paste the claim or headline you want to verify..." data-i18n-placeholder="whatsapp_input_placeholder"></textarea>
+          <p data-i18n="whatsapp_desc">Generate a ready-made WhatsApp message to report or confirm suspicious claims.</p>
+          <textarea id="whatsappClaimInput" class="verify-input" rows="4" placeholder="Paste the claim or headline you want to confirm..." data-i18n-placeholder="whatsapp_input_placeholder"></textarea>
           <div class="whatsapp-actions">
             <button class="btn btn-primary btn-sm" onclick="generateWhatsAppShare()" data-i18n="whatsapp_generate">Generate Message</button>
             <button class="btn btn-ghost btn-sm" onclick="copyWhatsAppMessage()" data-i18n="whatsapp_copy">Copy Message</button>
@@ -452,21 +452,206 @@
     </div>
   </section>
 
+  <!-- About Section -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <h2 class="section-title">About <span class="gradient-text">iConfam</span></h2>
+      <p class="section-subtitle">Empowering truth through AI-driven verification. We combine cutting-edge language models with real-time web intelligence to fight misinformation.</p>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-number">97.3%</div>
+          <div class="stat-desc">Detection Accuracy</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">3</div>
+          <div class="stat-desc">AI Models Combined</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100+</div>
+          <div class="stat-desc">Trusted Sources</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number"><5s</div>
+          <div class="stat-desc">Average Verification</div>
+        </div>
+      </div>
+
+      <div class="mission-section-inner">
+        <h3 class="section-title" style="font-size: 1.8rem; margin-top: 2rem;">Our <span class="gradient-text">Mission</span></h3>
+        <p class="section-subtitle">Why we built iConfam and what drives us forward</p>
+
+        <div class="mission-grid">
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-shield"></i></div>
+            <h3>Combat Misinformation</h3>
+            <p>Fake news spreads six times faster than accurate information. iConfam provides an accessible, intelligent first line of defense against the viral spread of misleading claims and fabricated stories across digital platforms.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-brain"></i></div>
+            <h3>Democratize Verification</h3>
+            <p>Fact-checking should not be a privilege reserved for institutions. By combining multiple AI models into a simple interface, iConfam puts powerful verification capabilities into the hands of every internet user, regardless of technical expertise.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-link"></i></div>
+            <h3>Transparency Through AI</h3>
+            <p>Every verification result includes a detailed breakdown showing how each model contributed to the final score. We believe users deserve to understand the reasoning behind each assessment, not just the conclusion.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-bolt"></i></div>
+            <h3>Speed Meets Accuracy</h3>
+            <p>Misinformation waits for no one. Our multi-model pipeline delivers comprehensive analysis in under five seconds, ensuring that verification keeps pace with the rapid spread of online content.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-globe"></i></div>
+            <h3>Source Cross-Referencing</h3>
+            <p>We go beyond text analysis by searching the web in real-time, cross-referencing claims against over 100 trusted news sources and fact-checking organizations to provide contextual verification.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-lock"></i></div>
+            <h3>Privacy First</h3>
+            <p>Your data stays yours. iConfam processes content in real-time without storing inputs on our servers. Verification history lives locally in your browser, and you maintain full control over your data at all times.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tech-section-inner">
+        <h3 class="section-title" style="font-size: 1.8rem; margin-top: 2rem;">Powered by <span class="gradient-text">Technology</span></h3>
+        <p class="section-subtitle">The AI stack behind every verification</p>
+
+        <div class="tech-stack">
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-robot"></i></div>
+            <div>
+              <h4>BERT NLP Model</h4>
+              <p>Fine-tuned fake news detection model analyzing linguistic patterns, sentiment, and structural anomalies. Contributes 25% to the final score.</p>
+            </div>
+          </div>
+
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-puzzle-piece"></i></div>
+            <div>
+              <h4>Groq LLaMA 3.1 70B</h4>
+              <p>High-speed large language model providing contextual reasoning and claim assessment. The largest contributor at 35% weight in score fusion.</p>
+            </div>
+          </div>
+
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-magnifying-glass"></i></div>
+            <div>
+              <h4>Web Search Engine</h4>
+              <p>Real-time DuckDuckGo search and Google News RSS for cross-referencing claims against live sources. Weighted at 40% for maximum reliability.</p>
+            </div>
+          </div>
+
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-eye"></i></div>
+            <div>
+              <h4>Gemini 2.0 Flash</h4>
+              <p>Google's multimodal vision AI for analyzing image content directly. Powers image verification with smart API key rotation for reliability.</p>
+            </div>
+          </div>
+
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-book"></i></div>
+            <div>
+              <h4>EasyOCR</h4>
+              <p>Optical character recognition engine that extracts text from uploaded images and screenshots, enabling verification of visual content.</p>
+            </div>
+          </div>
+
+          <div class="tech-item">
+            <div class="tech-icon"><i class="fas fa-scale-balanced"></i></div>
+            <div>
+              <h4>Score Fusion Engine</h4>
+              <p>Weighted combination algorithm that merges BERT (25%), LLM (35%), and Web (40%) scores into a single, calibrated credibility rating.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stakeholders-section-inner">
+        <h3 class="section-title" style="font-size: 1.8rem; margin-top: 2rem;">Key <span class="gradient-text">Stakeholders</span></h3>
+        <p class="section-subtitle">Who benefits from iConfam</p>
+
+        <div class="stakeholder-grid">
+          <div class="stakeholder-card">
+            <div class="stakeholder-avatar"><i class="fas fa-user"></i></div>
+            <h4>Everyday Readers</h4>
+            <div class="stakeholder-role">Primary Users</div>
+            <p>Quickly verify sensational headlines, social media posts, and forwarded messages before sharing them with friends and family.</p>
+          </div>
+
+          <div class="stakeholder-card">
+            <div class="stakeholder-avatar"><i class="fas fa-newspaper"></i></div>
+            <h4>Journalists</h4>
+            <div class="stakeholder-role">Professional Verifiers</div>
+            <p>Use iConfam as a rapid first-pass tool to flag potentially fabricated claims before investing time in manual fact-checking workflows.</p>
+          </div>
+
+          <div class="stakeholder-card">
+            <div class="stakeholder-avatar"><i class="fas fa-graduation-cap"></i></div>
+            <h4>Researchers & Educators</h4>
+            <div class="stakeholder-role">Academic Community</div>
+            <p>Leverage the multi-model breakdown to study misinformation patterns and teach media literacy in educational settings.</p>
+          </div>
+
+          <div class="stakeholder-card">
+            <div class="stakeholder-avatar"><i class="fas fa-building"></i></div>
+            <h4>Organizations</h4>
+            <div class="stakeholder-role">Enterprise Users</div>
+            <p>Integrate verification capabilities into content moderation pipelines and internal communication review processes.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="outcomes-section-inner">
+        <h3 class="section-title" style="font-size: 1.8rem; margin-top: 2rem;">Expected <span class="gradient-text">Outcomes</span></h3>
+        <p class="section-subtitle">What we aim to achieve</p>
+
+        <div class="mission-grid">
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-chart-line"></i></div>
+            <h3>Reduced Misinformation Spread</h3>
+            <p>By making verification instantaneous and accessible, we empower users to pause and verify before sharing unverified claims, directly reducing the viral spread of fake news.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-lightbulb"></i></div>
+            <h3>Enhanced Media Literacy</h3>
+            <p>Through transparent score breakdowns and source references, users develop a stronger intuition for identifying suspicious content independently over time.</p>
+          </div>
+
+          <div class="mission-card">
+            <div class="mission-icon"><i class="fas fa-handshake"></i></div>
+            <h3>Trustworthy Information Ecosystem</h3>
+            <p>As more users verify before sharing, the overall quality of information circulating online improves, creating a healthier digital public square for everyone.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FAQ Section -->
   <section class="faq-section">
     <div class="container">
       <h2 class="section-title" style="text-align:center;">Frequently Asked <span class="gradient-text">Questions</span></h2>
-      <p class="section-subtitle" style="margin: 0 auto;">Everything you need to know about VerifyIt</p>
+      <p class="section-subtitle" style="margin: 0 auto;">Everything you need to know about iConfam</p>
 
       <div class="faq-list">
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            How does VerifyIt detect fake news?
+            How does iConfam detect fake news?
             <span class="faq-toggle"><i class="fas fa-plus"></i></span>
           </button>
           <div class="faq-answer">
             <div class="faq-answer-inner">
-              VerifyIt uses a multi-model approach combining BERT-based natural language processing, large language model analysis via Groq, and real-time web search verification with a focus on global news sources. The BERT model evaluates linguistic patterns, the LLM provides contextual reasoning, and web search cross-references claims against trusted international and regional sources. These scores are weighted and combined for a final credibility rating.
+              iConfam uses a multi-model approach combining BERT-based natural language processing, large language model analysis via Groq, and real-time web search verification with a focus on global news sources. The BERT model evaluates linguistic patterns, the LLM provides contextual reasoning, and web search cross-references claims against trusted international and regional sources. These scores are weighted and combined for a final credibility rating.
             </div>
           </div>
         </div>
@@ -478,7 +663,7 @@
           </button>
           <div class="faq-answer">
             <div class="faq-answer-inner">
-              Our multi-model approach achieves approximately 97% accuracy on known datasets. However, no automated system is perfect — we recommend using VerifyIt as a tool to guide your judgment, not as an absolute truth detector. Always cross-reference important claims with multiple trusted sources.
+              Our multi-model approach achieves approximately 97% accuracy on known datasets. However, no automated system is perfect — we recommend using iConfam as a tool to guide your judgment, not as an absolute truth detector. Always cross-reference important claims with multiple trusted sources.
             </div>
           </div>
         </div>
@@ -502,19 +687,19 @@
           </button>
           <div class="faq-answer">
             <div class="faq-answer-inner">
-              No. VerifyIt processes your text in real-time and does not store your input on our servers. Verification history is saved locally in your browser using localStorage and is never transmitted externally. You can clear your history at any time.
+              No. iConfam processes your text in real-time and does not store your input on our servers. Verification history is saved locally in your browser using localStorage and is never transmitted externally. You can clear your history at any time.
             </div>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" onclick="toggleFaq(this)">
-            Can I verify images and screenshots?
+            Can I confirm images and screenshots?
             <span class="faq-toggle">+</span>
           </button>
           <div class="faq-answer">
             <div class="faq-answer-inner">
-              Yes! VerifyIt supports image verification using OCR (Optical Character Recognition) to extract text from screenshots, and Gemini Vision AI to analyze image content directly. Simply upload a screenshot of a news article, social media post, or any image containing text, and our AI will analyze it.
+              Yes! iConfam supports image verification using OCR (Optical Character Recognition) to extract text from screenshots, and Gemini Vision AI to analyze image content directly. Simply upload a screenshot of a news article, social media post, or any image containing text, and our AI will analyze it.
             </div>
           </div>
         </div>
@@ -527,12 +712,12 @@
     <div class="container">
       <div class="footer-content">
         <div class="footer-brand">
-          VerifyIt
+          iConfam
         </div>
-        <div class="footer-text">© 2026 VerifyIt. AI-Powered Fake News Detection for the world.</div>
+        <div class="footer-text">© 2026 iConfam. AI-Powered Fake News Detection for the world.</div>
         <div class="footer-links">
           <a href="about.html">About</a>
-          <a href="home.html">Verify</a>
+          <a href="home.html">Confam</a>
         </div>
       </div>
     </div>
@@ -542,13 +727,13 @@
   <div class="history-backdrop" id="historyBackdrop"></div>
   <div class="history-panel" id="historyPanel">
     <div class="history-panel-header">
-      <h3><i class="fas fa-clipboard"></i> Verification History</h3>
+      <h3><i class="fa fa-history" aria-hidden="true"></i> Confirmation History</h3>
       <button class="btn btn-ghost btn-sm" onclick="toggleHistory()"><i class="fas fa-times"></i></button>
     </div>
     <div class="history-list" id="historyList">
       <div class="empty-state">
         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-        <p>No verifications yet. Start by verifying some content!</p>
+        <p>No verifications yet. Start confirming some content!</p>
       </div>
     </div>
   </div>

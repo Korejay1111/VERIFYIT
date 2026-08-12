@@ -109,11 +109,13 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-         "https://verifyit-3.onrender.com",
-        "https://verifyit-ten.vercel.app",
-        
-        "https://verifyit-3.onrender.com",
-        "https://verifyit-ten.vercel.app",
+         "https://icomfam.onrender.com",
+        "https://iconfam.vercel.app",
+        # Local development hosts (allow from local static server / Live Server)
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
     ],
     allow_credentials=True,
     allow_methods=["*"],

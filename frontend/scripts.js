@@ -409,9 +409,9 @@ const translations = {
     nav_verify: 'Verify',
     nav_about: 'About',
     hero_badge: 'AI-Powered Verification',
-    hero_heading: 'Detect Fake News with VerifyIt',
+    hero_heading: 'Detect Fake News with Iconfam',
     hero_paragraph: 'Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.',
-    hero_start: 'Start Verifying ↓',
+    hero_start: 'Start Confirming ↓',
     hero_trending: 'Trending News',
     verify_title: 'Verify Your Content',
     verify_subtitle: 'Choose your verification method below and get instant results.',
@@ -454,9 +454,9 @@ const translations = {
     nav_verify: 'Ṣàyẹwo',
     nav_about: 'Nipa',
     hero_badge: 'Ìmúlòlùfẹ́ AI',
-    hero_heading: 'Ṣàwárí Ìròyìn Asán pẹ̀lú VerifyIt',
+    hero_heading: 'Ṣàwárí Ìròyìn Asán pẹ̀lú Iconfam',
     hero_paragraph: 'Da àpilẹ̀kọ sílẹ̀ tàbí gbe àwòrán kan sórí — Ẹ̀rọ AI wa yóò ṣe àyẹ̀wò àti fí ìtẹ́numọ́ hàn ní ìsẹ́jú.',
-    hero_start: 'Bẹrẹ Ṣàyẹwo ↓',
+    hero_start: 'Bẹrẹ Ṣàtúnṣe ↓',
     hero_trending: 'Ìròyìn tó ń gbajú',
     verify_title: 'Ṣàyẹwo Àkóónú Rẹ',
     verify_subtitle: 'Yan ọ̀nà ṣàyẹwo rẹ̀ ní isalẹ kí o sì gba esi lẹ́sẹkẹsẹ.',
@@ -506,7 +506,7 @@ const translations = {
     nav_verify: 'Tabbatar',
     nav_about: 'Game da',
     hero_badge: 'Bincike na AI',
-    hero_heading: 'Gano Karya Labarai tare da VerifyIt',
+    hero_heading: 'Gano Karya Labarai tare da Iconfam',
     hero_paragraph: 'Manna labarin ko ɗora hoton allo — ƙirar AI namu zata bincika sannan ta bayar da sakamako cikin sauri.',
     hero_start: 'Fara Tabbatarwa ↓',
     hero_trending: 'Labarai Masu Ƙarfi',
@@ -558,7 +558,7 @@ const translations = {
     nav_verify: 'Nyocha',
     nav_about: 'Banyere',
     hero_badge: 'Nyocha AI',
-    hero_heading: 'Chọta Akwụkwọ Akụkọ Ụgha na VerifyIt',
+    hero_heading: 'Chọta Akwụkwọ Akụkọ Ụgha na Iconfam',
     hero_paragraph: 'Tinye akụkọ ma ọ bụ bulite onyonyo — igwe AI anyị ga-enyocha ma nye akara ntụkwasị obi n’oge.',
     hero_start: 'Malite Nyocha ↓',
     hero_trending: 'Akụkọ Na-apụta',
@@ -768,6 +768,43 @@ let quizState = {
   completed: false
 };
 
+// Extended quiz questions
+const extendedQuizQuestions = [
+  {
+    question: 'Which is more likely to be reliable news?',
+    options: ['A sensational headline with ALL CAPS and multiple exclamation marks!!!', 'A factual headline with specific details and attributed sources'],
+    answer: 1,
+    explanation: 'Sensational formatting is often used to manipulate emotions. Reliable news uses calm, specific language with proper sourcing.'
+  },
+  {
+    question: 'Is this statement real or fake? "Doctors HATE this one weird trick for weight loss."',
+    options: ['Real', 'Fake'],
+    answer: 1,
+    explanation: 'This is clickbait misinformation. Legitimate health advice comes from qualified medical professionals with scientific backing, not secrets.'
+  },
+  {
+    question: 'Which would make a claim more credible?',
+    options: ['Posted by an anonymous account with no verification', 'Published by a verified news organization with multiple sources and byline'],
+    answer: 1,
+    explanation: 'Credible sources have clear attribution, verification, and accountability. Anonymous posts lack transparency and verification.'
+  },
+  {
+    question: 'Is this headline real or fake? "Tech billionaire pledges $10 billion to combat climate change."',
+    options: ['Real', 'Fake'],
+    answer: 0,
+    explanation: 'This is plausible news with specific people, amounts, and verifiable causes. Such donations are regularly reported by legitimate news.'
+  },
+  {
+    question: 'Which is a red flag for fake news?',
+    options: ['A claim with no sources cited and emotional appeals', 'A detailed report with multiple verified sources and expert quotes'],
+    answer: 0,
+    explanation: 'Misinformation relies on emotions and lacks evidence. Real news provides sources, facts, and expert verification you can independently check.'
+  }
+];
+
+// Combine base and extended questions
+const allQuizQuestions = quizQuestions.concat(extendedQuizQuestions);
+
 function toggleQuiz() {
   const backdrop = document.getElementById('quizModalBackdrop');
   const widget = document.getElementById('quizWidget');
@@ -792,12 +829,12 @@ function renderQuizQuestion() {
 
   if (!quizBody || !quizProgress || !quizNextBtn || !quizRestartBtn) return;
 
-  const q = quizQuestions[quizState.current];
-  quizProgress.textContent = `Question ${quizState.current + 1} of ${quizQuestions.length}`;
+  const q = allQuizQuestions[quizState.current];
+  quizProgress.textContent = `Question ${quizState.current + 1} of ${allQuizQuestions.length}`;
   quizState.answered = false;
   quizNextBtn.classList.remove('hidden');
   quizRestartBtn.classList.add('hidden');
-  quizNextBtn.textContent = quizState.current === quizQuestions.length - 1 ? 'See Results' : 'Next Question';
+  quizNextBtn.textContent = quizState.current === allQuizQuestions.length - 1 ? 'See Results' : 'Next Question';
 
   quizBody.innerHTML = `
     <div class="quiz-question">
@@ -821,7 +858,7 @@ function selectQuizOption(index) {
   if (quizState.answered) return;
   quizState.answered = true;
 
-  const q = quizQuestions[quizState.current];
+  const q = allQuizQuestions[quizState.current];
   const correct = index === q.answer;
   if (correct) quizState.score += 1;
 
@@ -837,7 +874,7 @@ function selectQuizOption(index) {
       <p>${escapeHtml(q.explanation)}</p>
     </div>
   `;
-  quizNextBtn.textContent = quizState.current === quizQuestions.length - 1 ? 'See Results' : 'Next Question';
+  quizNextBtn.textContent = quizState.current === allQuizQuestions.length - 1 ? 'See Results' : 'Next Question';
 }
 
 function quizNext() {
@@ -846,7 +883,7 @@ function quizNext() {
     return;
   }
 
-  if (quizState.current < quizQuestions.length - 1) {
+  if (quizState.current < allQuizQuestions.length - 1) {
     quizState.current += 1;
     renderQuizQuestion();
     return;
@@ -865,13 +902,13 @@ function showQuizResults() {
   quizState.completed = true;
   quizNextBtn.classList.add('hidden');
   quizRestartBtn.classList.remove('hidden');
-  quizProgress.textContent = `Quiz complete — you scored ${quizState.score} of ${quizQuestions.length}`;
+  quizProgress.textContent = `Quiz complete — you scored ${quizState.score} of ${allQuizQuestions.length}`;
 
   const performance = quizState.score >= 4 ? 'Excellent! You are a strong fact-checker.' : quizState.score >= 2 ? 'Good work — keep practicing.' : 'Practice more and stay cautious with unverified news.';
 
   quizBody.innerHTML = `
     <div class="quiz-complete">
-      <h4>Your score: ${quizState.score}/${quizQuestions.length}</h4>
+      <h4>Your score: ${quizState.score}/${allQuizQuestions.length}</h4>
       <p>${escapeHtml(performance)}</p>
       <p>Try the quiz again to improve your verification skills.</p>
     </div>
