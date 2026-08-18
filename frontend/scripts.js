@@ -382,14 +382,19 @@ function renderHistory() {
 function toggleHistory() {
   const panel = document.getElementById('historyPanel');
   const backdrop = document.getElementById('historyBackdrop');
+
   if (!panel || !backdrop) return;
 
   const isOpen = panel.classList.contains('open');
+
   panel.classList.toggle('open');
   backdrop.classList.toggle('show');
 
-  if (!isOpen) renderHistory();
+  if (!isOpen) {
+    renderHistory();
+  }
 }
+
 
 function escapeHtml(text) {
   const div = document.createElement('div');
@@ -432,9 +437,21 @@ const translations = {
     whatsapp_generate: 'Generate Message',
     whatsapp_copy: 'Copy Message',
     whatsapp_open: 'Open WhatsApp',
-    language_title: 'Local Language Support',
-    language_desc: 'Switch to Yoruba, Hausa, or Igbo for a more comfortable verification experience.',
-    language_info: 'Use the selector above to choose your local language.',
+    feedback_title: 'User Feedback',
+feedback_desc: 'Help us improve iConfam by sharing your experience, suggestions, or feedback about the verification service.',
+feedback_button: 'Give Feedback',
+feedback_name: 'Your Name',
+feedback_email: 'Email',
+feedback_experience: 'How was your experience?',
+feedback_message: 'Feedback',
+feedback_message_placeholder: 'Tell us what you liked, what could be improved, or any suggestions you have...',
+feedback_submit: 'Submit Feedback',
+feedback_cancel: 'Cancel',
+feedback_title_modal: 'Share Your Feedback',
+feedback_subtitle: 'Tell us how we can make iConfam better.',
+feedback_success: 'Thank you! Your feedback has been submitted.',
+feedback_rating_required: 'Please rate your experience.',
+feedback_required: 'Please provide your name and feedback.',
     result_title: 'Verification Result',
     result_ai_analysis: 'AI Analysis',
     result_sources: 'Sources Found',
@@ -484,9 +501,21 @@ const translations = {
     whatsapp_generate: 'Ṣẹda Ifiranṣẹ',
     whatsapp_copy: 'Daakọ Ifiranṣẹ',
     whatsapp_open: 'Ṣí WhatsApp',
-    language_title: 'Atilẹyin Èdè Agbegbe',
-    language_desc: 'Yan Yorùbá, Hausa, tàbí Igbo fún ìrírí títúnṣe tó rọrùn.',
-    language_info: 'Lo aṣàyàn èdè loke láti yan èdè agbegbe rẹ.',
+    feedback_title: 'Èrò àti Àbá Olùlò',
+feedback_desc: 'Ràn wá lọ́wọ́ láti mú iConfam dára sí i nípa pínpín ìrírí, àbá, tàbí èrò rẹ nípa iṣẹ́ ìṣàyẹ̀wò wa.',
+feedback_button: 'Fún Wa Ní Èrò Rẹ',
+feedback_name: 'Orúkọ Rẹ',
+feedback_email: 'Imeeli',
+feedback_experience: 'Báwo ni ìrírí rẹ ṣe rí?',
+feedback_message: 'Èrò àti Àbá',
+feedback_message_placeholder: 'Sọ fún wa ohun tí o fẹ́ràn, ohun tí a lè mú dára sí i, tàbí àbá tí o ní...',
+feedback_submit: 'Firanṣẹ́ Èrò',
+feedback_cancel: 'Fagilé',
+feedback_title_modal: 'Pín Èrò Rẹ',
+feedback_subtitle: 'Sọ fún wa bí a ṣe lè mú iConfam dára sí i.',
+feedback_success: 'O ṣeun! A ti gba èrò rẹ.',
+feedback_rating_required: 'Jọ̀wọ́ fún wa ní ìdíyelé ìrírí rẹ.',
+feedback_required: 'Jọ̀wọ́ tẹ orúkọ rẹ àti èrò rẹ sílẹ̀.',
     result_title: 'Esi Ṣàyẹwo',
     result_ai_analysis: 'Ìtúpalẹ̀ AI',
     result_sources: 'Orísun Tó Rí',
@@ -728,195 +757,350 @@ function saveSettings() {
   openSettings(false);
 }
 
+// ============================================================
+// FAKE NEWS QUIZ
+// ============================================================
+
 const quizQuestions = [
   {
-    question: 'Is this headline real or fake? “BREAKING: Government to ban all mobile phones nationwide tonight.”',
-    options: ['Real', 'Fake'],
+    question: "A message says: 'Share this immediately or your bank account will be blocked today.' What should you do?",
+    options: [
+      "Share it immediately",
+      "Verify the claim through an official source",
+      "Send it to all your contacts",
+      "Ignore every warning message"
+    ],
     answer: 1,
-    explanation: 'This headline is exaggerated and unlikely. Real news rarely uses extreme urgency to force immediate action.'
+    explanation: "Urgent messages that pressure you to share information should be verified through an official source before taking action."
   },
+
   {
-    question: 'Is this headline real or fake? “Local hospital reports a 30% drop in malaria cases after new prevention campaign.”',
-    options: ['Real', 'Fake'],
-    answer: 0,
-    explanation: 'This headline is plausible and specific, with a realistic claim that would come from health reporting.'
-  },
-  {
-    question: 'Is this headline real or fake? “Celebrity endorses miracle pill that cures diabetes in 3 days.”',
-    options: ['Real', 'Fake'],
+    question: "Which is the strongest sign that an online news story may be unreliable?",
+    options: [
+      "It has a professional-looking website",
+      "It contains a sensational headline with no credible sources",
+      "It has a photograph",
+      "It is shared by a friend"
+    ],
     answer: 1,
-    explanation: 'Miracle cure claims are a common sign of misinformation; true medical news is not this sensational.'
+    explanation: "Sensational claims without credible sources are a common warning sign of misinformation."
   },
+
   {
-    question: 'Is this headline real or fake? “University publishes peer-reviewed study on renewable energy adoption.”',
-    options: ['Real', 'Fake'],
-    answer: 0,
-    explanation: 'This sounds like legitimate science reporting, with specific details and a reasonable source.'
+    question: "You receive a screenshot claiming that a famous person made a controversial statement. What should you do first?",
+    options: [
+      "Share the screenshot",
+      "Assume it is true",
+      "Look for the original statement from a credible source",
+      "Edit the screenshot"
+    ],
+    answer: 2,
+    explanation: "Screenshots can be edited or taken out of context. Look for the original statement or credible reporting."
   },
+
   {
-    question: 'Is this headline real or fake? “Virus spread linked to 5G towers in city center.”',
-    options: ['Real', 'Fake'],
+    question: "What does fact-checking involve?",
+    options: [
+      "Believing information that agrees with you",
+      "Checking claims against reliable evidence and sources",
+      "Sharing information quickly",
+      "Reading only social media comments"
+    ],
     answer: 1,
-    explanation: 'This is a conspiracy-style claim combining unrelated topics, which is a red flag for fake news.'
+    explanation: "Fact-checking means examining claims against evidence and trustworthy sources."
+  },
+
+  {
+    question: "What should you do when an AI verification result is uncertain?",
+    options: [
+      "Treat it as definitely true",
+      "Treat it as definitely fake",
+      "Check additional trusted sources",
+      "Share it anyway"
+    ],
+    answer: 2,
+    explanation: "AI tools can make mistakes. An uncertain result means you should conduct additional verification."
   }
 ];
 
-let quizState = {
-  current: 0,
-  score: 0,
-  answered: false,
-  completed: false
-};
+let currentQuizQuestion = 0;
+let quizScore = 0;
+let quizAnswered = false;
 
-// Extended quiz questions
-const extendedQuizQuestions = [
-  {
-    question: 'Which is more likely to be reliable news?',
-    options: ['A sensational headline with ALL CAPS and multiple exclamation marks!!!', 'A factual headline with specific details and attributed sources'],
-    answer: 1,
-    explanation: 'Sensational formatting is often used to manipulate emotions. Reliable news uses calm, specific language with proper sourcing.'
-  },
-  {
-    question: 'Is this statement real or fake? "Doctors HATE this one weird trick for weight loss."',
-    options: ['Real', 'Fake'],
-    answer: 1,
-    explanation: 'This is clickbait misinformation. Legitimate health advice comes from qualified medical professionals with scientific backing, not secrets.'
-  },
-  {
-    question: 'Which would make a claim more credible?',
-    options: ['Posted by an anonymous account with no verification', 'Published by a verified news organization with multiple sources and byline'],
-    answer: 1,
-    explanation: 'Credible sources have clear attribution, verification, and accountability. Anonymous posts lack transparency and verification.'
-  },
-  {
-    question: 'Is this headline real or fake? "Tech billionaire pledges $10 billion to combat climate change."',
-    options: ['Real', 'Fake'],
-    answer: 0,
-    explanation: 'This is plausible news with specific people, amounts, and verifiable causes. Such donations are regularly reported by legitimate news.'
-  },
-  {
-    question: 'Which is a red flag for fake news?',
-    options: ['A claim with no sources cited and emotional appeals', 'A detailed report with multiple verified sources and expert quotes'],
-    answer: 0,
-    explanation: 'Misinformation relies on emotions and lacks evidence. Real news provides sources, facts, and expert verification you can independently check.'
-  }
-];
 
-// Combine base and extended questions
-const allQuizQuestions = quizQuestions.concat(extendedQuizQuestions);
-
+// Open / close quiz
 function toggleQuiz() {
-  const backdrop = document.getElementById('quizModalBackdrop');
-  const widget = document.getElementById('quizWidget');
-  const toggleBtn = document.getElementById('quizToggleBtn');
-  const target = backdrop || widget;
-  if (!target || !toggleBtn) return;
+    console.log("QUIZ BUTTON CLICKED");
 
-  const opening = target.classList.contains('hidden');
-  target.classList.toggle('hidden');
-  if (opening) {
-    quizState = { current: 0, score: 0, answered: false, completed: false };
+    const quizModal = document.getElementById("quizModalBackdrop");
+
+    if (!quizModal) {
+        console.error("quizModalBackdrop NOT FOUND");
+        alert("Quiz HTML container was not found.");
+        return;
+    }
+
+    quizModal.classList.remove("hidden");
+
+    quizState = {
+        current: 0,
+        score: 0,
+        answered: false,
+        completed: false
+    };
+
     renderQuizQuestion();
-    toggleBtn.textContent = getTranslation('start_quiz_btn');
-  }
 }
 
+
+// Render current question
 function renderQuizQuestion() {
-  const quizBody = document.getElementById('quizBody');
-  const quizProgress = document.getElementById('quizProgress');
-  const quizNextBtn = document.getElementById('quizNextBtn');
-  const quizRestartBtn = document.getElementById('quizRestartBtn');
+  const body = document.getElementById('quizBody');
+  const progress = document.getElementById('quizProgress');
+  const nextBtn = document.getElementById('quizNextBtn');
+  const restartBtn = document.getElementById('quizRestartBtn');
 
-  if (!quizBody || !quizProgress || !quizNextBtn || !quizRestartBtn) return;
+  if (!body) {
+    console.error('quizBody element not found.');
+    return;
+  }
 
-  const q = allQuizQuestions[quizState.current];
-  quizProgress.textContent = `Question ${quizState.current + 1} of ${allQuizQuestions.length}`;
-  quizState.answered = false;
-  quizNextBtn.classList.remove('hidden');
-  quizRestartBtn.classList.add('hidden');
-  quizNextBtn.textContent = quizState.current === allQuizQuestions.length - 1 ? 'See Results' : 'Next Question';
+  const question = quizQuestions[currentQuizQuestion];
 
-  quizBody.innerHTML = `
+  if (!question) {
+    showQuizResult();
+    return;
+  }
+
+  quizAnswered = false;
+
+  if (progress) {
+    progress.textContent =
+      `Question ${currentQuizQuestion + 1} of ${quizQuestions.length}`;
+  }
+
+  if (nextBtn) {
+    nextBtn.classList.remove('hidden');
+    nextBtn.disabled = true;
+    nextBtn.textContent =
+      currentQuizQuestion === quizQuestions.length - 1
+        ? 'Finish Quiz'
+        : 'Next Question';
+  }
+
+  if (restartBtn) {
+    restartBtn.classList.add('hidden');
+  }
+
+  body.innerHTML = `
     <div class="quiz-question">
-      <p>${escapeHtml(q.question)}</p>
+      <h4 style="
+        font-size: 1.15rem;
+        line-height: 1.6;
+        margin-bottom: 1.25rem;
+      ">
+        ${escapeHtml(question.question)}
+      </h4>
+
+      <div class="quiz-options">
+        ${question.options.map((option, index) => `
+          <button
+            type="button"
+            class="quiz-option"
+            onclick="selectQuizAnswer(${index})"
+          >
+            <span class="quiz-option-number">
+              ${String.fromCharCode(65 + index)}
+            </span>
+
+            <span>
+              ${escapeHtml(option)}
+            </span>
+          </button>
+        `).join('')}
+      </div>
+
+      <div
+        id="quizExplanation"
+        style="
+          display:none;
+          margin-top:1rem;
+          padding:1rem;
+          border-radius:8px;
+          background:var(--bg-secondary);
+          color:var(--text-secondary);
+          line-height:1.6;
+        "
+      ></div>
     </div>
-    <div class="quiz-options">
-      ${q.options.map((option, index) => `
-        <button class="btn btn-ghost btn-sm quiz-option" onclick="selectQuizOption(${index})">${escapeHtml(option)}</button>
-      `).join('')}
-    </div>
-    <div class="quiz-feedback" id="quizFeedback"></div>
   `;
 }
 
-function selectQuizOption(index) {
-  const quizBody = document.getElementById('quizBody');
-  const quizNextBtn = document.getElementById('quizNextBtn');
-  const quizFeedback = document.getElementById('quizFeedback');
-  if (!quizBody || !quizNextBtn || !quizFeedback) return;
 
-  if (quizState.answered) return;
-  quizState.answered = true;
+// Select answer
+function selectQuizAnswer(selectedIndex) {
+  if (quizAnswered) return;
 
-  const q = allQuizQuestions[quizState.current];
-  const correct = index === q.answer;
-  if (correct) quizState.score += 1;
+  const question = quizQuestions[currentQuizQuestion];
 
-  quizBody.querySelectorAll('.quiz-option').forEach((button, idx) => {
+  if (!question) return;
+
+  quizAnswered = true;
+
+  const options = document.querySelectorAll('.quiz-option');
+  const nextBtn = document.getElementById('quizNextBtn');
+  const explanation = document.getElementById('quizExplanation');
+
+  options.forEach((button, index) => {
     button.disabled = true;
-    button.classList.toggle('correct', idx === q.answer);
-    button.classList.toggle('incorrect', idx === index && idx !== q.answer);
+
+    if (index === question.answer) {
+      button.classList.add('correct');
+    }
+
+    if (
+      index === selectedIndex &&
+      selectedIndex !== question.answer
+    ) {
+      button.classList.add('incorrect');
+    }
   });
 
-  quizFeedback.innerHTML = `
-    <div class="quiz-feedback-text">
-      <strong>${correct ? 'Correct!' : 'Not quite.'}</strong>
-      <p>${escapeHtml(q.explanation)}</p>
-    </div>
-  `;
-  quizNextBtn.textContent = quizState.current === allQuizQuestions.length - 1 ? 'See Results' : 'Next Question';
+  if (selectedIndex === question.answer) {
+    quizScore++;
+    showToast('Correct! 🎉', 'success');
+  } else {
+    showToast('Not quite. Check the explanation.', 'warning');
+  }
+
+  if (explanation) {
+    explanation.style.display = 'block';
+
+    explanation.innerHTML = `
+      <strong>
+        ${selectedIndex === question.answer ? '✅ Correct!' : '💡 Explanation'}
+      </strong>
+
+      <div style="margin-top:0.4rem;">
+        ${escapeHtml(question.explanation)}
+      </div>
+    `;
+  }
+
+  if (nextBtn) {
+    nextBtn.disabled = false;
+  }
 }
 
+
+// Next question
 function quizNext() {
-  if (!quizState.answered) {
-    showToast('Please choose an answer before continuing.', 'warning');
+  if (!quizAnswered) {
+    showToast('Please select an answer first.', 'warning');
     return;
   }
 
-  if (quizState.current < allQuizQuestions.length - 1) {
-    quizState.current += 1;
-    renderQuizQuestion();
+  currentQuizQuestion++;
+
+  if (currentQuizQuestion >= quizQuestions.length) {
+    showQuizResult();
     return;
   }
 
-  showQuizResults();
+  renderQuizQuestion();
 }
 
-function showQuizResults() {
-  const quizBody = document.getElementById('quizBody');
-  const quizNextBtn = document.getElementById('quizNextBtn');
-  const quizRestartBtn = document.getElementById('quizRestartBtn');
-  const quizProgress = document.getElementById('quizProgress');
-  if (!quizBody || !quizNextBtn || !quizRestartBtn || !quizProgress) return;
 
-  quizState.completed = true;
-  quizNextBtn.classList.add('hidden');
-  quizRestartBtn.classList.remove('hidden');
-  quizProgress.textContent = `Quiz complete — you scored ${quizState.score} of ${allQuizQuestions.length}`;
+// Show final score
+function showQuizResult() {
+  const body = document.getElementById('quizBody');
+  const progress = document.getElementById('quizProgress');
+  const nextBtn = document.getElementById('quizNextBtn');
+  const restartBtn = document.getElementById('quizRestartBtn');
 
-  const performance = quizState.score >= 4 ? 'Excellent! You are a strong fact-checker.' : quizState.score >= 2 ? 'Good work — keep practicing.' : 'Practice more and stay cautious with unverified news.';
+  if (!body) return;
 
-  quizBody.innerHTML = `
-    <div class="quiz-complete">
-      <h4>Your score: ${quizState.score}/${allQuizQuestions.length}</h4>
-      <p>${escapeHtml(performance)}</p>
-      <p>Try the quiz again to improve your verification skills.</p>
+  const percentage = Math.round(
+    (quizScore / quizQuestions.length) * 100
+  );
+
+  let message = '';
+
+  if (percentage >= 80) {
+    message = 'Excellent! You have a strong eye for misinformation.';
+  } else if (percentage >= 60) {
+    message = 'Good job! Keep improving your fact-checking skills.';
+  } else {
+    message = 'Keep learning! Always verify suspicious information before sharing.';
+  }
+
+  if (progress) {
+    progress.textContent = 'Quiz Complete';
+  }
+
+  if (nextBtn) {
+    nextBtn.classList.add('hidden');
+  }
+
+  if (restartBtn) {
+    restartBtn.classList.remove('hidden');
+  }
+
+  body.innerHTML = `
+    <div style="
+      text-align:center;
+      padding:2rem 1rem;
+    ">
+
+      <div style="
+        font-size:4rem;
+        margin-bottom:1rem;
+      ">
+        ${percentage >= 80 ? '🏆' : percentage >= 60 ? '🎉' : '📚'}
+      </div>
+
+      <h3 style="
+        font-size:1.5rem;
+        margin-bottom:0.75rem;
+      ">
+        Quiz Completed!
+      </h3>
+
+      <div style="
+        font-size:3rem;
+        font-weight:800;
+        margin:1rem 0;
+      ">
+        ${quizScore}/${quizQuestions.length}
+      </div>
+
+      <p style="
+        color:var(--text-secondary);
+        line-height:1.6;
+      ">
+        ${escapeHtml(message)}
+      </p>
+
+      <div style="
+        margin-top:1rem;
+        font-weight:700;
+      ">
+        Score: ${percentage}%
+      </div>
+
     </div>
   `;
+
+  quizAnswered = true;
 }
 
+
+// Restart quiz
 function resetQuiz() {
-  quizState = { current: 0, score: 0, answered: false, completed: false };
+  currentQuizQuestion = 0;
+  quizScore = 0;
+  quizAnswered = false;
+
   renderQuizQuestion();
 }
 
@@ -1684,3 +1868,153 @@ document.addEventListener('DOMContentLoaded', () => {
     loadTrendingNews();
   }
 });
+// ============================================================
+// USER FEEDBACK
+// ============================================================
+
+let selectedFeedbackRating = 0;
+
+function openFeedback(open = true) {
+  const backdrop = document.getElementById('feedbackModalBackdrop');
+
+  if (!backdrop) return;
+
+  if (open) {
+    const user = typeof getCurrentUser === 'function'
+      ? getCurrentUser()
+      : null;
+
+    if (user) {
+      const nameInput = document.getElementById('feedbackName');
+      const emailInput = document.getElementById('feedbackEmail');
+
+      if (nameInput && user.username) {
+        nameInput.value = user.username;
+      }
+
+      if (emailInput && user.email) {
+        emailInput.value = user.email;
+      }
+    }
+
+    backdrop.classList.remove('hidden');
+  } else {
+    backdrop.classList.add('hidden');
+  }
+}
+
+
+function setFeedbackRating(rating) {
+  selectedFeedbackRating = rating;
+
+  const ratingInput = document.getElementById('feedbackRating');
+
+  if (ratingInput) {
+    ratingInput.value = rating;
+  }
+
+  document.querySelectorAll('.feedback-rating button').forEach(button => {
+    const buttonRating = Number(button.dataset.rating);
+
+    button.classList.toggle(
+      'selected',
+      buttonRating <= rating
+    );
+  });
+}
+
+
+function submitFeedback(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('feedbackName')?.value.trim();
+  const email = document.getElementById('feedbackEmail')?.value.trim();
+  const message = document.getElementById('feedbackMessage')?.value.trim();
+
+  if (!name || !message) {
+    showToast(
+      getTranslation('feedback_required') ||
+      'Please provide your name and feedback.',
+      'error'
+    );
+    return;
+  }
+
+  if (selectedFeedbackRating === 0) {
+    showToast(
+      getTranslation('feedback_rating_required') ||
+      'Please rate your experience.',
+      'warning'
+    );
+    return;
+  }
+
+  const feedback = {
+    id: Date.now(),
+    name: name,
+    email: email,
+    rating: selectedFeedbackRating,
+    message: message,
+    date: new Date().toISOString()
+  };
+
+  const existingFeedback = JSON.parse(
+    localStorage.getItem('iconfam-feedback') || '[]'
+  );
+
+  existingFeedback.unshift(feedback);
+
+  localStorage.setItem(
+    'iconfam-feedback',
+    JSON.stringify(existingFeedback)
+  );
+
+  document.getElementById('feedbackForm').reset();
+
+  selectedFeedbackRating = 0;
+
+  document.querySelectorAll('.feedback-rating button').forEach(button => {
+    button.classList.remove('selected');
+  });
+
+  openFeedback(false);
+
+  showToast(
+    getTranslation('feedback_success') ||
+    'Thank you! Your feedback has been submitted.',
+    'success'
+  );
+}
+
+
+function clearFeedback() {
+  const form = document.getElementById('feedbackForm');
+
+  if (form) {
+    form.reset();
+  }
+
+  selectedFeedbackRating = 0;
+
+  document.querySelectorAll('.feedback-rating button').forEach(button => {
+    button.classList.remove('selected');
+  });
+
+  const counter = document.getElementById('feedbackCharCount');
+
+  if (counter) {
+    counter.textContent = '0';
+  }
+}
+
+
+function initFeedback() {
+  const message = document.getElementById('feedbackMessage');
+  const counter = document.getElementById('feedbackCharCount');
+
+  if (!message || !counter) return;
+
+  message.addEventListener('input', () => {
+    counter.textContent = message.value.length;
+  });
+}

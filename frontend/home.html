@@ -155,133 +155,242 @@
   </section>
 
   <!-- Verify Section -->
-  <section class="verify-section" id="verify">
-    <div class="container">
-      <h2 class="section-title" data-i18n="verify_title">Confirm Your <span class="gradient-text">Content</span></h2>
-      <p class="section-subtitle" data-i18n="verify_subtitle">Choose your confirmation method below and get instant results.</p>
+  <div class="verify-grid">
 
-      <div class="verify-grid">
-        <!-- Text Confirmation Card -->
-        <div class="verify-card">
-          <div class="card-header">
-            <div class="card-icon"><i class="fas fa-file-alt"></i></div>
-            <div>
-              <div class="card-title" data-i18n="text_card_title">Text Confirmation</div>
-              <div class="card-desc" data-i18n="text_card_desc">Paste an article or claim to analyze</div>
-            </div>
-          </div>
-
-          <textarea
-            class="verify-textarea"
-            id="textInput"
-            placeholder="Paste the news article, headline, or claim you want to confirm..."
-            maxlength="5000"
-          ></textarea>
-          <div class="char-count"><span id="charCount">0</span>/5000</div>
-
-          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-            <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
-              <i class="fas fa-search"></i> Confirm Text
-            </button>
-            <button class="btn btn-ghost" onclick="clearText()">Clear</button>
-          </div>
-
-          <!-- Text Results -->
-          <div id="textResults"></div>
+  <!-- Text Confirmation Card -->
+  <div class="verify-card">
+    <div class="card-header">
+      <div class="card-icon">
+        <i class="fas fa-file-alt"></i>
+      </div>
+      <div>
+        <div class="card-title" data-i18n="text_card_title">
+          Text Confirmation
         </div>
-
-        <!-- URL Verification Card -->
-        <div class="verify-card">
-          <div class="card-header">
-            <div class="card-icon"><i class="fas fa-link"></i></div>
-            <div>
-              <div class="card-title" data-i18n="url_card_title">URL Confirmation</div>
-              <div class="card-desc" data-i18n="url_card_desc">Enter a news article URL to analyze</div>
-            </div>
-          </div>
-
-          <input
-            type="url"
-            class="verify-input"
-            id="urlInput"
-            placeholder="https://example.com/news-article"
-            maxlength="2000"
-          >
-
-          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-            <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
-              <i class="fas fa-search"></i> Confirm URL
-            </button>
-            <button class="btn btn-ghost" onclick="clearUrl()">Clear</button>
-          </div>
-
-          <!-- URL Results -->
-          <div id="urlResults"></div>
-        </div>
-
-        <!-- Image Verification Card -->
-        <div class="verify-card">
-          <div class="card-header">
-            <div class="card-icon"><i class="fas fa-image"></i></div>
-            <div>
-              <div class="card-title" data-i18n="image_card_title">Image Verification</div>
-              <div class="card-desc" data-i18n="image_card_desc">Upload a screenshot or news image</div>
-            </div>
-          </div>
-
-          <div class="image-upload-zone" id="imageUploadZone">
-            <div class="upload-icon"><i class="fas fa-folder-open"></i></div>
-            <div class="upload-text">Drop an image here or click to upload</div>
-            <div class="upload-hint">Supports JPG, PNG, WEBP (max 10MB)</div>
-            <input type="file" id="imageInput" accept="image/*" style="display: none;">
-          </div>
-
-          <div id="imagePreviewContainer" class="image-preview-container" style="display: none;">
-            <img id="imagePreview" src="" alt="Preview">
-            <button class="remove-image-btn" onclick="removeImage()"><i class="fas fa-times"></i></button>
-          </div>
-
-          <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-            <button class="btn btn-primary" id="verifyImageBtn" onclick="verifyImage()">
-              <i class="fas fa-search"></i> Confirm Image
-            </button>
-            <button class="btn btn-ghost" onclick="extractTextFromImage()">
-              <i class="fas fa-file"></i> Extract Text First
-            </button>
-          </div>
-
-          <!-- Image Results -->
-          <div id="imageResults"></div>
+        <div class="card-desc" data-i18n="text_card_desc">
+          Paste an article or claim to analyze
         </div>
       </div>
     </div>
-  </section>
 
-  <section class="feature-section">
-    <div class="container">
-      <div class="section-header feature-header">
-        <div>
-          <h2 class="section-title" data-i18n="deepfake_section_title">Deepfake Detection</h2>
-          <p class="section-subtitle" data-i18n="deepfake_section_subtitle">Upload audio or video for synthetic media analysis.</p>
+    <textarea
+      class="verify-textarea"
+      id="textInput"
+      placeholder="Paste the news article, headline, or claim you want to confirm..."
+      maxlength="5000"
+    ></textarea>
+
+    <div class="char-count">
+      <span id="charCount">0</span>/5000
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+      <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
+        <i class="fas fa-search"></i> Confirm Text
+      </button>
+
+      <button class="btn btn-ghost" onclick="clearText()">
+        Clear
+      </button>
+    </div>
+
+    <div id="textResults"></div>
+  </div>
+
+
+  <!-- URL Verification Card -->
+  <div class="verify-card">
+    <div class="card-header">
+      <div class="card-icon">
+        <i class="fas fa-link"></i>
+      </div>
+      <div>
+        <div class="card-title" data-i18n="url_card_title">
+          URL Confirmation
+        </div>
+        <div class="card-desc" data-i18n="url_card_desc">
+          Enter a news article URL to analyze
         </div>
       </div>
+    </div>
 
-      <div class="feature-grid">
-        <article class="feature-card deepfake-card">
-          <div class="feature-card-icon"><i class="fas fa-video"></i></div>
-          <h3 data-i18n="deepfake_card_title">Deepfake Media Detector</h3>
-          <p data-i18n="deepfake_card_desc">Upload audio or video to detect synthetic media and get AI explanations.</p>
-          <div class="deepfake-controls">
-            <input type="file" id="deepfakeFileInput" accept="audio/*,video/*" style="display: none;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('deepfakeFileInput').click()" data-i18n="deepfake_button">Upload Media</button>
-            <div class="deepfake-selected" id="deepfakeFileSelected" data-i18n="deepfake_input_placeholder">No file selected</div>
-            <button type="button" class="btn btn-primary btn-sm" onclick="verifyDeepfake()" data-i18n="deepfake_detect_btn"><i class="fas fa-search"></i> Detect Deepfake</button>
-          </div>
-          <div id="deepfakeResults"></div>
-        </article>
+    <input
+      type="url"
+      class="verify-input"
+      id="urlInput"
+      placeholder="https://example.com/news-article"
+      maxlength="2000"
+    >
+
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+      <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
+        <i class="fas fa-search"></i> Confirm URL
+      </button>
+
+      <button class="btn btn-ghost" onclick="clearUrl()">
+        Clear
+      </button>
+    </div>
+
+    <div id="urlResults"></div>
+  </div>
+
+
+  <!-- Image Verification Card -->
+  <div class="verify-card">
+    <div class="card-header">
+      <div class="card-icon">
+        <i class="fas fa-image"></i>
+      </div>
+      <div>
+        <div class="card-title" data-i18n="image_card_title">
+          Image Verification
+        </div>
+        <div class="card-desc" data-i18n="image_card_desc">
+          Upload a screenshot or news image
+        </div>
       </div>
     </div>
-  </section>
+
+    <div class="image-upload-zone" id="imageUploadZone">
+      <div class="upload-icon">
+        <i class="fas fa-folder-open"></i>
+      </div>
+
+      <div class="upload-text">
+        Drop an image here or click to upload
+      </div>
+
+      <div class="upload-hint">
+        Supports JPG, PNG, WEBP (max 10MB)
+      </div>
+
+      <input
+        type="file"
+        id="imageInput"
+        accept="image/*"
+        style="display: none;"
+      >
+    </div>
+
+    <div
+      id="imagePreviewContainer"
+      class="image-preview-container"
+      style="display: none;"
+    >
+      <img id="imagePreview" src="" alt="Preview">
+
+      <button
+        class="remove-image-btn"
+        onclick="removeImage()"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+      <button
+        class="btn btn-primary"
+        id="verifyImageBtn"
+        onclick="verifyImage()"
+      >
+        <i class="fas fa-search"></i> Confirm Image
+      </button>
+
+      <button
+        class="btn btn-ghost"
+        onclick="extractTextFromImage()"
+      >
+        <i class="fas fa-file"></i> Extract Text First
+      </button>
+    </div>
+
+    <div id="imageResults"></div>
+  </div>
+
+
+  <!-- Deepfake Detection Card -->
+  <div class="verify-card deepfake-card">
+    <div class="card-header">
+      <div class="card-icon">
+        <i class="fas fa-video"></i>
+      </div>
+
+      <div>
+        <div class="card-title" data-i18n="deepfake_card_title">
+          Deepfake Detection
+        </div>
+
+        <div class="card-desc" data-i18n="deepfake_card_desc">
+          Upload audio or video to detect synthetic media
+        </div>
+      </div>
+    </div>
+
+    <input
+      type="file"
+      id="deepfakeFileInput"
+      accept="audio/*,video/*"
+      style="display: none;"
+    >
+
+    <div class="image-upload-zone deepfake-upload-zone">
+      <div class="upload-icon">
+        <i class="fas fa-cloud-upload-alt"></i>
+      </div>
+
+      <div class="upload-text">
+        Upload audio or video
+      </div>
+
+      <div class="upload-hint">
+        Supports common audio and video formats
+      </div>
+
+      <button
+        type="button"
+        class="btn btn-secondary"
+        onclick="document.getElementById('deepfakeFileInput').click()"
+      >
+        <i class="fas fa-folder-open"></i>
+        Select Media
+      </button>
+    </div>
+
+    <div
+      class="deepfake-selected"
+      id="deepfakeFileSelected"
+      style="margin-top: 1rem;"
+      data-i18n="deepfake_input_placeholder"
+    >
+      No file selected
+    </div>
+
+    <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+      <button
+        type="button"
+        class="btn btn-primary"
+        onclick="verifyDeepfake()"
+        data-i18n="deepfake_detect_btn"
+      >
+        <i class="fas fa-search"></i>
+        Detect Deepfake
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-ghost"
+        onclick="clearDeepfake()"
+      >
+        Clear
+      </button>
+    </div>
+
+    <div id="deepfakeResults"></div>
+  </div>
+
+</div>
+</section>
 
   <!-- Learn & Share Section -->
   <section class="feature-section">
@@ -314,12 +423,29 @@
           <a id="whatsappShareLink" class="btn btn-secondary btn-sm" href="#" target="_blank" rel="noopener" onclick="openWhatsApp(); return false;" data-i18n="whatsapp_open">Open WhatsApp</a>
         </article>
 
-        <article class="feature-card language-card">
-          <div class="feature-card-icon"><i class="fas fa-globe"></i></div>
-          <h3 data-i18n="language_title">Local Language Support</h3>
-          <p data-i18n="language_desc">Switch to Yoruba, Hausa, or Igbo for a more comfortable verification experience.</p>
-          <div class="language-summary" data-i18n="language_info">Use the selector above to choose your local language.</div>
-        </article>
+        <!-- User Feedback Card -->
+<article class="feature-card feedback-card">
+  <div class="feature-card-icon">
+    <i class="fas fa-comments"></i>
+  </div>
+
+  <h3 data-i18n="feedback_title">User Feedback</h3>
+
+  <p data-i18n="feedback_desc">
+    Help us improve iConfam by sharing your experience, suggestions,
+    or feedback about the verification service.
+  </p>
+
+  <button
+    type="button"
+    class="btn btn-secondary"
+    onclick="openFeedback()"
+    data-i18n="feedback_button"
+  >
+    <i class="fas fa-pen"></i>
+    Give Feedback
+  </button>
+</article>
       </div>
 
       <div id="quizModalBackdrop" class="quiz-backdrop hidden">
@@ -422,6 +548,137 @@
         </div>
       </div>
     </div>
+    <!-- Feedback Modal -->
+<div id="feedbackModalBackdrop" class="quiz-backdrop hidden">
+  <div class="quiz-widget" id="feedbackWidget">
+
+    <div class="quiz-header">
+      <div>
+        <h3 data-i18n="feedback_title_modal">
+          Share Your Feedback
+        </h3>
+
+        <p data-i18n="feedback_subtitle">
+          Tell us how we can make iConfam better.
+        </p>
+      </div>
+
+      <button
+        class="btn btn-ghost btn-sm"
+        onclick="openFeedback(false)"
+      >
+        Close
+      </button>
+    </div>
+
+    <div class="quiz-body">
+
+      <form id="feedbackForm" onsubmit="submitFeedback(event)">
+
+        <div style="display:grid;gap:0.75rem;">
+
+          <label data-i18n="feedback_name">
+            Your Name
+          </label>
+
+          <input
+            type="text"
+            id="feedbackName"
+            class="verify-input"
+            placeholder="Enter your name"
+            required
+          >
+
+          <label data-i18n="feedback_email">
+            Email
+          </label>
+
+          <input
+            type="email"
+            id="feedbackEmail"
+            class="verify-input"
+            placeholder="Enter your email"
+          >
+
+          <label data-i18n="feedback_experience">
+            How was your experience?
+          </label>
+
+          <div class="feedback-rating">
+            <button type="button" data-rating="1" onclick="setFeedbackRating(1)">
+              <i class="fas fa-star"></i>
+            </button>
+
+            <button type="button" data-rating="2" onclick="setFeedbackRating(2)">
+              <i class="fas fa-star"></i>
+            </button>
+
+            <button type="button" data-rating="3" onclick="setFeedbackRating(3)">
+              <i class="fas fa-star"></i>
+            </button>
+
+            <button type="button" data-rating="4" onclick="setFeedbackRating(4)">
+              <i class="fas fa-star"></i>
+            </button>
+
+            <button type="button" data-rating="5" onclick="setFeedbackRating(5)">
+              <i class="fas fa-star"></i>
+            </button>
+          </div>
+
+          <input
+            type="hidden"
+            id="feedbackRating"
+            value="0"
+          >
+
+          <label data-i18n="feedback_message">
+            Feedback
+          </label>
+
+          <textarea
+            id="feedbackMessage"
+            class="verify-textarea"
+            rows="5"
+            maxlength="2000"
+            placeholder="Tell us what you liked, what could be improved, or any suggestions you have..."
+            data-i18n-placeholder="feedback_message_placeholder"
+            required
+          ></textarea>
+
+          <div class="char-count">
+            <span id="feedbackCharCount">0</span>/2000
+          </div>
+
+          <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+
+            <button
+              type="button"
+              class="btn btn-ghost"
+              onclick="openFeedback(false)"
+              data-i18n="feedback_cancel"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+              data-i18n="feedback_submit"
+            >
+              <i class="fas fa-paper-plane"></i>
+              Submit Feedback
+            </button>
+
+          </div>
+
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+</div>
   </section>
 
   <!-- Trending News Section -->
