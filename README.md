@@ -1,10 +1,10 @@
-# 🔍 VerifyIt Nigeria - AI-Powered News Verification Platform
+# 🔍 iConfam Nigeria - AI-Powered News Verification Platform
 
 ![Process Flow](verifai_process_flow_diagram.png)
 
 ## 🚀 Overview
 
-VerifyIt Nigeria is an AI-powered platform that combats misinformation by verifying news articles and images using multiple AI models and web search verification, with a special focus on Nigerian news sources and contexts.
+iConfam Nigeria is an AI-powered platform that combats misinformation by verifying news articles and images using multiple AI models and web search verification, with a special focus on Nigerian news sources and contexts.
 
 ## ✨ Features
 
