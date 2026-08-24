@@ -101,7 +101,7 @@ def log_verification(type_: str, content: str, score: float, verdict: str, user:
     verifications.append(entry)
     save_verifications(verifications)
 app = FastAPI(
-    title="VerifyIt Nigeria — AI Fake News Detection",
+    title="iConfam Nigeria — AI Fake News Detection",
     description="Multi-model AI-powered fake news verification platform optimized for Nigerian news and information",
     version="2.0.0"
 )
@@ -110,7 +110,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
          "https://verifyit-3.onrender.com",
-        "https://confamit.vercel.app/",
+        "https://confamit.vercel.app",
         # Local development hosts (allow from local static server / Live Server)
         "http://127.0.0.1:5500",
         "http://localhost:5500",
