@@ -1224,7 +1224,7 @@ a:hover { color: var(--accent-secondary); }
 /* --- About Page --- */
 .about-hero {
   padding: 8rem 0 4rem;
-  text-align: center;
+  text-align: left;
   position: relative;
 }
 
