@@ -687,7 +687,7 @@ a:hover { color: var(--accent-secondary); }
 }
 
 .hero-stat .stat-value {
-  font-size: 1.75rem;
+  font-size: 5.75rem;
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
