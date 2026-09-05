@@ -415,7 +415,7 @@ const translations = {
     nav_about: 'About',
     hero_badge: 'AI-Powered Verification',
     hero_heading: 'Welcome to fake news detection platform with Iconfam',
-    hero_paragraph: 'Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.',
+    hero_paragraph: 'KindlyPaste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.',
     hero_start: 'Start Confirming ↓',
     hero_trending: 'Trending News',
     verify_title: 'Verify Your Content',
