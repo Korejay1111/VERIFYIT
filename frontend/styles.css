@@ -1282,14 +1282,14 @@ a:hover { color: var(--accent-secondary); }
 }
 
 .mission-card .mission-icon {
-  width: 52px;
+  width: 2px;
   height: 52px;
   background: var(--accent-glow);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 0.5rem;
   margin-bottom: 1.25rem;
 }
 
