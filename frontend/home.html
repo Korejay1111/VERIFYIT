@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <link rel="icon" type="image/png" href="favicon.png">
   <style>
-    .user- {
+    .user-profile {
       display: flex;
       align-items: center;
-      gap: 0.75rem;profile
+      gap: 0.75rem;
       padding: 0.5rem 1rem;
       background: var(--bg-tertiary);
       border-radius: 8px;
@@ -96,12 +96,16 @@
       </a>
 
       <ul class="navbar-links" id="navLinks">
-        <li><a href="home.html" class="active">Confam</a></li>
-        <li><a href="#about">About</a></li>
+        <li><a href="#home" class="active" data-i18n="nav_home">Home</a></li>
+        <li><a href="#trending" data-i18n="nav_trending">Trending</a></li>
+        <li><a href="#verify" data-i18n="nav_verify">Confirm News</a></li>
+        <li><a href="#quiz" data-i18n="nav_quiz">Quiz</a></li>
+        <li><a href="#feedback" data-i18n="nav_feedback">Feedback</a></li>
+        <li><a href="#about" data-i18n="nav_about">About</a></li>
       </ul>
 
       <div class="navbar-actions">
-        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Confirmation History"><i class="fas fa-history"></i></button>
+        <button class="btn btn-ghost btn-icon" id="historyBtn" title="Confirmation History" data-i18n-title="history_title"><i class="fas fa-history"></i></button>
         
         <!-- User Profile Dropdown -->
         <div class="user-actions-wrapper">
@@ -110,51 +114,86 @@
             <span id="userName">User</span>
           </div>
           <div class="user-profile-dropdown" id="userDropdown">
-            <div class="dropdown-item" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'"><i class="fas fa-brain"></i> Admin Dashboard</div>
-            <div class="dropdown-item" id="profileLink"><i class="fas fa-user"></i> Profile</div>
-            <div class="dropdown-item" id="settingsLink"><i class="fas fa-cog"></i> Settings</div>
-            <div class="dropdown-item logout" id="logoutBtn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+            <div class="dropdown-item" id="adminLink" style="display: none;" onclick="window.location.href='admin.html'"><i class="fas fa-brain"></i> <span data-i18n="menu_admin">Admin Dashboard</span></div>
+            <div class="dropdown-item" id="profileLink"><i class="fas fa-user"></i> <span data-i18n="menu_profile">Profile</span></div>
+            <div class="dropdown-item" id="settingsLink"><i class="fas fa-cog"></i> <span data-i18n="menu_settings">Settings</span></div>
+            <div class="dropdown-item logout" id="logoutBtn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> <span data-i18n="menu_logout">Logout</span></div>
           </div>
         </div>
 
-        <button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" type="button" aria-label="Open navigation menu" aria-controls="navLinks" aria-expanded="false">
+          <i class="fas fa-bars"></i>
+        </button>
       </div>
     </div>
   </nav>
 
   <!-- Hero Section -->
-  <section class="hero">
+  <section class="hero" id="home">
     <div class="container">
       <div class="hero-content">
-        <div class="hero-badge" data-i18n="hero_badge"
+        <div class="hero-badge">
           <span class="pulse-dot"></span>
-          AI-Powered Verification
+          <span data-i18n="hero_badge">AI-Powered Verification</span>
         </div>
-        <h1 data-i18n="hero_heading">Fake Information detection <br>with <span class="gradient-text">iConfam</span></h1>
+        <h1><span data-i18n="hero_heading">Fake news detection with iConfam</span></h1>
         <p data-i18n="hero_paragraph">Paste an article or upload a screenshot — our multi-model AI engine analyzes text, cross-references sources, and delivers a credibility score in seconds.</p>
         <div class="hero-buttons">
-          <a href="#verify" class="btn btn-primary btn-lg" data-i18n="hero_start">Start Confirming <i class="fas fa-arrow-down"></i></a>
+          <a href="#verify" class="btn btn-primary btn-lg"><span data-i18n="hero_start">Start Confirming</span> <i class="fas fa-arrow-down"></i></a>
           <a href="#trending" class="btn btn-secondary btn-lg" data-i18n="hero_trending">Trending News</a>
         </div>
         <div class="hero-stats">
           <div class="hero-stat">
             <div class="stat-value">97.3%</div>
-            <div class="stat-label">Accuracy Rate</div>
+            <div class="stat-label" data-i18n="hero_stat_accuracy">Accuracy Rate</div>
           </div>
           <div class="hero-stat">
             <div class="stat-value">3</div>
-            <div class="stat-label">AI Models</div>
+            <div class="stat-label" data-i18n="hero_stat_models">AI Models</div>
           </div>
           <div class="hero-stat">
-            <div class="stat-value"><5s></div>
-            <div class="stat-label">Avg. Response</div>
+            <div class="stat-value">&lt;5s</div>
+            <div class="stat-label" data-i18n="hero_stat_response">Avg. Response</div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
+  <!-- Trending News Section -->
+  <section class="trending-section" id="trending">
+    <div class="container">
+      <div class="trending-header">
+        <div>
+          <h2 class="section-title"><span class="gradient-text" data-i18n="trending_title">Trending News</span></h2>
+          <p class="section-subtitle" data-i18n="trending_subtitle">Latest headlines from verified sources</p>
+        </div>
+        <div class="category-filters" id="categoryFilters">
+          <button class="category-btn active" data-category="all" data-i18n="category_all">All</button>
+          <button class="category-btn" data-category="politics" data-i18n="category_politics">Politics</button>
+          <button class="category-btn" data-category="technology" data-i18n="category_technology">Technology</button>
+          <button class="category-btn" data-category="health" data-i18n="category_health">Health</button>
+          <button class="category-btn" data-category="science" data-i18n="category_science">Science</button>
+          <button class="category-btn" data-category="business" data-i18n="category_business">Business</button>
+        </div>
+      </div>
+
+      <div class="news-grid" id="newsGrid">
+        <div class="loading-overlay">
+          <div class="spinner"></div>
+          <div class="loading-text" data-i18n="loading_news">Loading trending news...</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Verify Section -->
+  <section class="verify-section" id="verify">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title" data-i18n="verify_title">Confirm News</h2>
+        <p class="section-subtitle" data-i18n="verify_subtitle">Choose how you want to check a claim.</p>
+      </div>
   <div class="verify-grid">
 
   <!-- Text Confirmation Card -->
@@ -178,6 +217,7 @@
       id="textInput"
       placeholder="Paste the news article, headline, or claim you want to confirm..."
       maxlength="5000"
+      data-i18n-placeholder="text_placeholder"
     ></textarea>
 
     <div class="char-count">
@@ -186,11 +226,11 @@
 
     <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
       <button class="btn btn-primary" id="verifyTextBtn" onclick="verifyText()">
-        <i class="fas fa-search"></i> Confirm Text
+        <i class="fas fa-search"></i><span data-i18n="confirm_text">Confirm Text</span>
       </button>
 
       <button class="btn btn-ghost" onclick="clearText()">
-        Clear
+        <span data-i18n="clear_button">Clear</span>
       </button>
     </div>
 
@@ -220,15 +260,16 @@
       id="urlInput"
       placeholder="https://example.com/news-article"
       maxlength="2000"
+      data-i18n-placeholder="url_placeholder"
     >
 
     <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
-      <button class="btn btn-primary" id="verifyUrlBtn" onclick="verifyUrl()">
-        <i class="fas fa-search"></i> Confirm URL
+      <button class="btn btn-primary btn-lg verify-url-button" id="verifyUrlBtn" onclick="verifyUrl()">
+        <i class="fas fa-search"></i><span data-i18n="confirm_url">Confirm URL</span>
       </button>
 
       <button class="btn btn-ghost" onclick="clearUrl()">
-        Clear
+        <span data-i18n="clear_button">Clear</span>
       </button>
     </div>
 
@@ -258,11 +299,11 @@
       </div>
 
       <div class="upload-text">
-        Drop an image here or click to upload
+        <span data-i18n="image_upload">Drop an image here or click to upload</span>
       </div>
 
       <div class="upload-hint">
-        Supports JPG, PNG, WEBP (max 10MB)
+        <span data-i18n="upload_hint">Supports JPG, PNG, WEBP (max 10MB)</span>
       </div>
 
       <input
@@ -294,14 +335,14 @@
         id="verifyImageBtn"
         onclick="verifyImage()"
       >
-        <i class="fas fa-search"></i> Confirm Image
+        <i class="fas fa-search"></i><span data-i18n="confirm_image">Confirm Image</span>
       </button>
 
       <button
         class="btn btn-ghost"
         onclick="extractTextFromImage()"
       >
-        <i class="fas fa-file"></i> Extract Text First
+        <i class="fas fa-file"></i><span data-i18n="extract_text">Extract Text First</span>
       </button>
     </div>
 
@@ -340,11 +381,11 @@
       </div>
 
       <div class="upload-text">
-        Upload audio or video
+        <span data-i18n="media_upload">Upload audio or video</span>
       </div>
 
       <div class="upload-hint">
-        Supports common audio and video formats
+        <span data-i18n="media_hint">Supports common audio and video formats</span>
       </div>
 
       <button
@@ -353,7 +394,7 @@
         onclick="document.getElementById('deepfakeFileInput').click()"
       >
         <i class="fas fa-folder-open"></i>
-        Select Media
+        <span data-i18n="select_media">Select Media</span>
       </button>
     </div>
 
@@ -371,10 +412,9 @@
         type="button"
         class="btn btn-primary"
         onclick="verifyDeepfake()"
-        data-i18n="deepfake_detect_btn"
       >
         <i class="fas fa-search"></i>
-        Detect Deepfake
+        <span data-i18n="deepfake_detect_btn">Detect Deepfake</span>
       </button>
 
       <button
@@ -382,7 +422,7 @@
         class="btn btn-ghost"
         onclick="clearDeepfake()"
       >
-        Clear
+        <span data-i18n="clear_button">Clear</span>
       </button>
     </div>
 
@@ -390,10 +430,11 @@
   </div>
 
 </div>
-</section>
+    </div>
+  </section>
 
   <!-- Learn & Share Section -->
-  <section class="feature-section">
+  <section class="feature-section" id="learn">
     <div class="container">
       <div class="section-header feature-header">
         <div>
@@ -403,11 +444,11 @@
       </div>
 
       <div class="feature-grid">
-        <article class="feature-card">
+        <article class="feature-card" id="quiz">
           <div class="feature-card-icon"><i class="fas fa-brain"></i></div>
           <h3 data-i18n="quiz_title">Fake News Quiz</h3>
           <p data-i18n="quiz_desc">Challenge yourself with short quiz questions to spot misinformation.</p>
-          <button type="button" class="btn btn-secondary" id="quizToggleBtn" onclick="toggleQuiz()" data-i18n="start_quiz_btn">Start Quiz</button>
+          <button type="button" class="btn btn-secondary" id="quizToggleBtn"><span data-i18n="start_quiz_btn">Start Quiz</span></button>
         </article>
 
         <article class="feature-card whatsapp-card">
@@ -424,7 +465,7 @@
         </article>
 
         <!-- User Feedback Card -->
-<article class="feature-card feedback-card">
+<article class="feature-card feedback-card" id="feedback">
   <div class="feature-card-icon">
     <i class="fas fa-comments"></i>
   </div>
@@ -440,10 +481,9 @@
     type="button"
     class="btn btn-secondary"
     onclick="openFeedback()"
-    data-i18n="feedback_button"
   >
     <i class="fas fa-pen"></i>
-    Give Feedback
+    <span data-i18n="feedback_button">Give Feedback</span>
   </button>
 </article>
       </div>
@@ -452,15 +492,16 @@
         <div id="quizWidget" class="quiz-widget">
           <div class="quiz-header">
             <div>
-              <h3 id="quizTitle">Fake News Quiz</h3>
+              <h3 id="quizTitle" data-i18n="quiz_title">Fake News Quiz</h3>
               <p id="quizProgress">Question 1 of 5</p>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="toggleQuiz()">Close</button>
+            <button class="btn btn-ghost btn-sm" onclick="closeQuiz()" data-i18n="quiz_close">Close</button>
           </div>
           <div class="quiz-body" id="quizBody"></div>
           <div class="quiz-footer">
-            <button type="button" class="btn btn-secondary btn-sm" id="quizNextBtn" onclick="quizNext()">Next Question</button>
-            <button type="button" class="btn btn-primary btn-sm hidden" id="quizRestartBtn" onclick="resetQuiz()">Try Again</button>
+            <button type="button" class="btn btn-secondary btn-sm" id="quizNextBtn" onclick="quizNext()" data-i18n="quiz_next">Next Question</button>
+            <button type="button" class="btn btn-primary btn-sm hidden" id="quizRestartBtn" onclick="resetQuiz()" data-i18n="quiz_try_again">Try Again</button>
+            <button type="button" class="btn btn-ghost btn-sm hidden" id="quizCloseBtn" onclick="closeQuiz()" data-i18n="quiz_return">Return to Dashboard</button>
           </div>
         </div>
       </div>
@@ -470,39 +511,39 @@
         <div class="quiz-widget" id="profileWidget">
           <div class="quiz-header">
             <div>
-              <h3>Profile</h3>
+              <h3 data-i18n="profile_title">Profile</h3>
               <p id="profileEmail"></p>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="openProfile(false)">Close</button>
+            <button class="btn btn-ghost btn-sm" onclick="openProfile(false)" data-i18n="quiz_close">Close</button>
           </div>
           <div class="quiz-body" id="profileBody">
             <form id="profileForm" onsubmit="event.preventDefault(); saveProfile();">
               <div style="display:flex;gap:1rem;align-items:center;">
                 <div class="user-avatar" id="profileAvatar" style="width:72px;height:72px;font-size:1.6rem;"></div>
                 <div style="flex:1;">
-                  <input id="profileNameInput" type="text" placeholder="Full name" style="font-weight:700;font-size:1.1rem;width:100%;padding:0.25rem;" />
+                  <input id="profileNameInput" type="text" placeholder="Full name" data-i18n-placeholder="profile_name_placeholder" style="font-weight:700;font-size:1.1rem;width:100%;padding:0.25rem;" />
                   <div id="profileRole" style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.25rem;"></div>
                 </div>
               </div>
 
               <div style="margin-top:1rem;display:grid;gap:0.5rem;">
-                <label style="font-size:0.85rem;color:var(--text-secondary);">Email (read-only)</label>
+                <label style="font-size:0.85rem;color:var(--text-secondary);" data-i18n="profile_email_read_only">Email (read-only)</label>
                 <input id="profileEmailInput" type="email" readonly style="background:var(--bg-secondary);padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);" />
 
-                <label style="font-size:0.85rem;color:var(--text-secondary);">Location</label>
-                <input id="profileLocationInput" type="text" placeholder="City, Country" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);" />
+                <label style="font-size:0.85rem;color:var(--text-secondary);" data-i18n="profile_location">Location</label>
+                <input id="profileLocationInput" type="text" placeholder="City, Country" data-i18n-placeholder="profile_location_placeholder" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);" />
 
-                <label style="font-size:0.85rem;color:var(--text-secondary);">Bio</label>
-                <textarea id="profileBioInput" rows="3" placeholder="Short bio or role" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);"></textarea>
+                <label style="font-size:0.85rem;color:var(--text-secondary);" data-i18n="profile_bio">Bio</label>
+                <textarea id="profileBioInput" rows="3" placeholder="Short bio or role" data-i18n-placeholder="profile_bio_placeholder" style="padding:0.5rem;border-radius:6px;border:1px solid var(--border-color);"></textarea>
 
                 <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:0.5rem;">
-                  <button type="button" class="btn btn-ghost" onclick="openProfile(false)">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save Profile</button>
+                  <button type="button" class="btn btn-ghost" onclick="openProfile(false)" data-i18n="feedback_cancel">Cancel</button>
+                  <button type="submit" class="btn btn-primary" data-i18n="profile_save">Save Profile</button>
                 </div>
               </div>
 
               <div style="margin-top:1rem;">
-                <button class="btn btn-primary" onclick="window.location.href='admin.html'" id="profileAdminBtn" style="display:none;">Go to Admin Dashboard</button>
+                <button class="btn btn-primary" onclick="window.location.href='admin.html'" id="profileAdminBtn" style="display:none;" data-i18n="menu_admin">Go to Admin Dashboard</button>
               </div>
             </form>
           </div>
@@ -514,23 +555,23 @@
         <div class="quiz-widget" id="settingsWidget">
           <div class="quiz-header">
             <div>
-              <h3>Settings</h3>
-              <p>Customize your experience</p>
+              <h3 data-i18n="settings_title">Settings</h3>
+              <p data-i18n="settings_subtitle">Customize your experience</p>
             </div>
-            <button class="btn btn-ghost btn-sm" onclick="openSettings(false)">Close</button>
+            <button class="btn btn-ghost btn-sm" onclick="openSettings(false)" data-i18n="quiz_close">Close</button>
           </div>
           <div class="quiz-body" id="settingsBody">
             <form id="settingsForm" onsubmit="event.preventDefault(); saveSettings();">
               <div style="display:grid;gap:0.75rem;">
-                <label>Theme</label>
+                <label data-i18n="settings_theme">Theme</label>
                 <div style="display:flex;gap:0.5rem;">
-                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="dark" onclick="setTheme('dark')">Dark</button>
-                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="light" onclick="setTheme('light')">Light</button>
-                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="ocean" onclick="setTheme('ocean')">Ocean</button>
-                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="forest" onclick="setTheme('forest')">Forest</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="dark" onclick="setTheme('dark')" data-i18n="theme_dark">Dark</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="light" onclick="setTheme('light')" data-i18n="theme_light">Light</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="ocean" onclick="setTheme('ocean')" data-i18n="theme_ocean">Ocean</button>
+                  <button type="button" class="btn btn-ghost settings-theme-button" data-theme="forest" onclick="setTheme('forest')" data-i18n="theme_forest">Forest</button>
                 </div>
 
-                <label>Language</label>
+                <label data-i18n="settings_language">Language</label>
                 <select id="settingsLanguageSelect">
                   <option value="en">English</option>
                   <option value="yo">Yoruba</option>
@@ -539,8 +580,8 @@
                 </select>
 
                 <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
-                  <button type="button" class="btn btn-ghost" onclick="openSettings(false)">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save Settings</button>
+                  <button type="button" class="btn btn-ghost" onclick="openSettings(false)" data-i18n="feedback_cancel">Cancel</button>
+                  <button type="submit" class="btn btn-primary" data-i18n="settings_save">Save Settings</button>
                 </div>
               </div>
             </form>
@@ -586,6 +627,7 @@
             id="feedbackName"
             class="verify-input"
             placeholder="Enter your name"
+            data-i18n-placeholder="feedback_name_placeholder"
             required
           >
 
@@ -598,6 +640,7 @@
             id="feedbackEmail"
             class="verify-input"
             placeholder="Enter your email"
+            data-i18n-placeholder="feedback_email_placeholder"
           >
 
           <label data-i18n="feedback_experience">
@@ -664,10 +707,9 @@
             <button
               type="submit"
               class="btn btn-primary"
-              data-i18n="feedback_submit"
             >
               <i class="fas fa-paper-plane"></i>
-              Submit Feedback
+              <span data-i18n="feedback_submit">Submit Feedback</span>
             </button>
 
           </div>
@@ -679,34 +721,6 @@
     </div>
   </div>
 </div>
-  </section>
-
-  <!-- Trending News Section -->
-  <section class="trending-section" id="trending">
-    <div class="container">
-      <div class="trending-header">
-        <div>
-          <h2 class="section-title">Trending <span class="gradient-text">News</span></h2>
-          <p class="section-subtitle">Latest headlines from verified sources</p>
-        </div>
-        <div class="category-filters" id="categoryFilters">
-          <button class="category-btn active" data-category="all">All</button>
-          <button class="category-btn" data-category="politics">Politics</button>
-          <button class="category-btn" data-category="technology">Technology</button>
-          <button class="category-btn" data-category="health">Health</button>
-          <button class="category-btn" data-category="science">Science</button>
-          <button class="category-btn" data-category="business">Business</button>
-        </div>
-      </div>
-
-      <div class="news-grid" id="newsGrid">
-        <!-- Populated by JS -->
-        <div class="loading-overlay">
-          <div class="spinner"></div>
-          <div class="loading-text">Loading trending news...</div>
-        </div>
-      </div>
-    </div>
   </section>
 
   <!-- About Section -->
@@ -984,13 +998,13 @@
   <div class="history-backdrop" id="historyBackdrop"></div>
   <div class="history-panel" id="historyPanel">
     <div class="history-panel-header">
-      <h3><i class="fa fa-history" aria-hidden="true"></i> Confirmation History</h3>
+      <h3><i class="fa fa-history" aria-hidden="true"></i> <span data-i18n="history_title">Confirmation History</span></h3>
       <button class="btn btn-ghost btn-sm" onclick="toggleHistory()"><i class="fas fa-times"></i></button>
     </div>
     <div class="history-list" id="historyList">
       <div class="empty-state">
         <div class="empty-icon"><i class="fas fa-inbox"></i></div>
-        <p>No verifications yet. Start confirming some content!</p>
+        <p data-i18n="history_empty">No verifications yet. Start confirming some content!</p>
       </div>
     </div>
   </div>
@@ -1015,12 +1029,12 @@
         return;
       }
 
+      const isAdmin = user.email && (user.email.includes('admin') || user.email.includes('@admin'));
       if (userNameElem) userNameElem.textContent = user.username;
       if (userAvatarElem) userAvatarElem.textContent = user.username.charAt(0).toUpperCase();
 
       // Show admin link if user is admin
       if (adminLink) {
-        const isAdmin = user.email && (user.email.includes('admin') || user.email.includes('@admin'));
         adminLink.style.display = isAdmin ? 'block' : 'none';
       }
 
@@ -1033,8 +1047,8 @@
       if (profileEmail) profileEmail.textContent = user.email || '';
       if (profileAvatar) profileAvatar.textContent = user.username.charAt(0).toUpperCase();
       const profileRole = document.getElementById('profileRole');
-      if (profileRole) profileRole.textContent = user.email && (user.email.includes('admin') || user.email.includes('@admin')) ? 'Admin' : 'Verified User';
-      if (profileAdminBtn) profileAdminBtn.style.display = (user.email && (user.email.includes('admin')||user.email.includes('@admin'))) ? 'inline-block' : 'none';
+      if (profileRole) profileRole.textContent = getTranslation(isAdmin ? 'profile_admin_role' : 'profile_verified_role');
+      if (profileAdminBtn) profileAdminBtn.style.display = isAdmin ? 'inline-block' : 'none';
     }
 
     function setupUserDropdown() {

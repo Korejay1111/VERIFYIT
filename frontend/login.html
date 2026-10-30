@@ -40,6 +40,17 @@
     .form-group {
       margin-bottom: 1.5rem;
     }
+    .remember-username {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: -0.5rem 0 1rem;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+    .remember-username input {
+      accent-color: var(--accent-primary);
+    }
     .form-label {
       display: block;
       font-size: 0.95rem;
@@ -168,6 +179,11 @@
         <div class="error-message" id="passwordError"></div>
       </div>
 
+      <label class="remember-username" for="rememberUsername">
+        <input type="checkbox" id="rememberUsername" checked>
+        Remember my username on this device
+      </label>
+
       <div class="error-message" id="generalError"></div>
 
       <button type="submit" class="auth-button btn btn-primary" id="loginBtn">
@@ -186,6 +202,12 @@
 
   <script src="auth.js?v=2"></script>
   <script>
+    const REMEMBERED_USERNAME_KEY = 'verifyit-remembered-username';
+    const rememberedUsername = localStorage.getItem(REMEMBERED_USERNAME_KEY);
+    if (rememberedUsername) {
+      document.getElementById('username').value = rememberedUsername;
+    }
+
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       await handleLogin();
@@ -228,6 +250,13 @@
         const data = await response.json();
 
         if (response.ok) {
+          const rememberUsername = document.getElementById('rememberUsername').checked;
+          if (rememberUsername) {
+            localStorage.setItem(REMEMBERED_USERNAME_KEY, username);
+          } else {
+            localStorage.removeItem(REMEMBERED_USERNAME_KEY);
+          }
+
           // Save token
           localStorage.setItem('verifyit-token', data.access_token);
           localStorage.setItem('verifyit-user', JSON.stringify(data.user));
@@ -253,7 +282,7 @@
     // Initialize theme
     
     initTheme?.();
-    initThemeSelector?.();
+    if (typeof initThemeSelector === 'function') initThemeSelector();
   </script>
 </body>
 </html>
