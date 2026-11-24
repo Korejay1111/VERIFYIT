@@ -107,12 +107,16 @@ python -c "from transformers import AutoTokenizer, AutoModelForSequenceClassific
 
 ---
 
-### Step 4: Configure AI API Keys
+### Step 4: Configure API Keys and Email
 
 Copy `.env.example` to `.env` in the project root and add your Groq API key and
 one or more Gemini API keys. Separate multiple Gemini keys with commas. The
-default Groq and Gemini model IDs are configured there; keep the keys out of
-source control.
+default Groq and Gemini model IDs are configured there.
+
+To enable password resets, configure the SMTP host, port, username, password,
+sender email, and frontend URL in `.env` (and in your hosting provider's
+environment settings). Use an SMTP app password when your email provider
+requires one. Keep all keys and email credentials out of source control.
 
 ---
 

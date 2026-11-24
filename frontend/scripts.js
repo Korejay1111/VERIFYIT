@@ -460,8 +460,10 @@ const translations = {
     profile_email_read_only: 'Email (read-only)',
     profile_location: 'Location',
     profile_location_placeholder: 'City, Country',
+    profile_profession: 'Role / Profession',
+    profile_profession_placeholder: 'e.g. Journalist, Student, Teacher',
     profile_bio: 'Bio',
-    profile_bio_placeholder: 'Short bio or role',
+    profile_bio_placeholder: 'Tell us a little about yourself',
     profile_save: 'Save Profile',
     settings_title: 'Settings',
     settings_subtitle: 'Customize your experience',
@@ -599,8 +601,10 @@ feedback_required: 'Please provide your name and feedback.',
     profile_email_read_only: 'Imeeli (kíkà nìkan)',
     profile_location: 'Ibi',
     profile_location_placeholder: 'Ìlú, Orílẹ̀-èdè',
+    profile_profession: 'Iṣẹ́ / Ọ̀jọ̀gbọ́n',
+    profile_profession_placeholder: 'Fún àpẹẹrẹ: Akọ̀ròyìn, Akẹ́kọ̀ọ́, Olùkọ́',
     profile_bio: 'Ìtàn Kúkúrú',
-    profile_bio_placeholder: 'Ìtàn kúkúrú tàbí iṣẹ́ rẹ',
+    profile_bio_placeholder: 'Sọ díẹ̀ nípa ara rẹ',
     profile_save: 'Fi Àkọọ́lẹ̀ Pamọ́',
     settings_title: 'Ètò',
     settings_subtitle: 'Ṣe àtúnṣe ìrírí rẹ',
@@ -768,8 +772,10 @@ feedback_required: 'Jọ̀wọ́ tẹ orúkọ rẹ àti èrò rẹ sílẹ̀.',
     profile_email_read_only: 'Imel (karantawa kawai)',
     profile_location: 'Wuri',
     profile_location_placeholder: 'Birni, Ƙasa',
+    profile_profession: 'Matsayi / Sana’a',
+    profile_profession_placeholder: 'Misali: Dan jarida, Dalibi, Malami',
     profile_bio: 'Takaitaccen Bayani',
-    profile_bio_placeholder: 'Takaitaccen bayani ko matsayi',
+    profile_bio_placeholder: 'Faɗi kaɗan game da kanka',
     profile_save: 'Ajiye Bayanan Mai Amfani',
     settings_title: 'Saituna',
     settings_subtitle: 'Keɓance yadda kake amfani da manhajar',
@@ -940,8 +946,10 @@ feedback_required: 'Jọ̀wọ́ tẹ orúkọ rẹ àti èrò rẹ sílẹ̀.',
     profile_email_read_only: 'Email (gụ naanị)',
     profile_location: 'Ebe',
     profile_location_placeholder: 'Obodo, Mba',
+    profile_profession: 'Ọrụ / Ọkachamara',
+    profile_profession_placeholder: 'Dịka: Onye nta akụkọ, Nwa akwụkwọ, Onye nkuzi',
     profile_bio: 'Nkọwa gbasara gị',
-    profile_bio_placeholder: 'Nkọwa dị mkpirikpi ma ọ bụ ọrụ gị',
+    profile_bio_placeholder: 'Kọwaa ntakịrị gbasara onwe gị',
     profile_save: 'Chekwa Profaịlụ',
     settings_title: 'Ntọala',
     settings_subtitle: 'Hazie ahụmịhe gị',
@@ -1144,50 +1152,48 @@ function initLanguageSelector() {
 }
 
 // --- Profile Save / Settings Save ---
-function saveProfile() {
-  const name = document.getElementById('profileNameInput')?.value?.trim();
-  const email = document.getElementById('profileEmailInput')?.value?.trim();
+async function saveProfile() {
+  const displayName = document.getElementById('profileNameInput')?.value?.trim();
   const location = document.getElementById('profileLocationInput')?.value?.trim();
+  const profession = document.getElementById('profileProfessionInput')?.value?.trim();
   const bio = document.getElementById('profileBioInput')?.value?.trim();
 
-  if (!name) {
+  if (!displayName) {
     showToast('Please enter your name before saving.', 'warning');
     return;
   }
 
-  // Update local current user
   const current = getCurrentUser() || {};
-  const updated = Object.assign({}, current, {
-    username: name,
-    email: email || current.email || '',
-    location: location || current.location || '',
-    bio: bio || current.bio || ''
-  });
+  if (!isAuthenticated()) {
+    showToast('Please log in to save your profile.', 'error');
+    return;
+  }
+
+  let savedProfile;
+  try {
+    savedProfile = await apiCall('/user', {
+      method: 'PUT',
+      body: JSON.stringify({
+        display_name: displayName,
+        location: location || '',
+        profession: profession || '',
+        bio: bio || ''
+      })
+    });
+  } catch (error) {
+    showToast(`Could not save profile: ${error.message}`, 'error');
+    return;
+  }
+
+  const updated = Object.assign({}, current, savedProfile);
   setCurrentUser(updated);
 
-  // Update UI
   const userNameElem = document.getElementById('userName');
   const userAvatarElem = document.getElementById('userAvatar');
-  if (userNameElem) userNameElem.textContent = updated.username;
-  if (userAvatarElem) userAvatarElem.textContent = updated.username.charAt(0).toUpperCase();
+  if (userNameElem) userNameElem.textContent = updated.display_name || updated.username;
+  if (userAvatarElem) userAvatarElem.textContent = (updated.display_name || updated.username).charAt(0).toUpperCase();
+  showToast('Profile saved.', 'success');
 
-  showToast('Profile saved locally.', 'success');
-
-  // Try to persist to backend if authenticated — best-effort
-  (async () => {
-    try {
-      if (isAuthenticated()) {
-        // Attempt to call a common user-update endpoint. If it fails, ignore but log.
-        const payload = { username: updated.username, location: updated.location, bio: updated.bio };
-        await apiCall('/user', { method: 'PUT', body: JSON.stringify(payload) });
-        showToast('Profile saved to server.', 'success');
-      }
-    } catch (err) {
-      console.warn('Server profile save failed:', err.message || err);
-    }
-  })();
-
-  // Close modal
   openProfile(false);
 }
 
@@ -1196,13 +1202,15 @@ function populateProfileForm() {
   const nameInput = document.getElementById('profileNameInput');
   const emailInput = document.getElementById('profileEmailInput');
   const locationInput = document.getElementById('profileLocationInput');
+  const professionInput = document.getElementById('profileProfessionInput');
   const bioInput = document.getElementById('profileBioInput');
   const avatar = document.getElementById('profileAvatar');
-  if (nameInput) nameInput.value = user.username || '';
+  if (nameInput) nameInput.value = user.display_name || user.username || '';
   if (emailInput) emailInput.value = user.email || '';
   if (locationInput) locationInput.value = user.location || '';
+  if (professionInput) professionInput.value = user.profession || '';
   if (bioInput) bioInput.value = user.bio || '';
-  if (avatar) avatar.textContent = (user.username || 'U').charAt(0).toUpperCase();
+  if (avatar) avatar.textContent = (user.display_name || user.username || 'U').charAt(0).toUpperCase();
 }
 
 function saveSettings() {

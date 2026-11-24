@@ -38,6 +38,25 @@ function removeCurrentUser() {
   localStorage.removeItem(USER_KEY);
 }
 
+function initPasswordToggles() {
+  document.querySelectorAll('[data-password-toggle]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const input = document.getElementById(button.getAttribute('aria-controls'));
+      if (!input) return;
+
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+      button.setAttribute('aria-pressed', String(reveal));
+      button.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+      const icon = button.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('fa-eye', !reveal);
+        icon.classList.toggle('fa-eye-slash', reveal);
+      }
+    });
+  });
+}
+
 // --- Authentication Status ---
 function isAuthenticated() {
   return !!getToken();
@@ -142,10 +161,13 @@ async function apiCall(endpoint, options = {}) {
 
 // --- Initialize Auth ---
 async function initAuth() {
+  initPasswordToggles();
   // Check if token is valid
   if (isAuthenticated()) {
     const isValid = await verifyToken();
-    if (!isValid && !window.location.href.includes('login.html') && !window.location.href.includes('register.html')) {
+    const publicAuthPage = ['login.html', 'register.html', 'forgot-password.html', 'reset-password.html']
+      .some(page => window.location.href.includes(page));
+    if (!isValid && !publicAuthPage) {
       // Token invalid, redirect to login
       requireAuth();
     }

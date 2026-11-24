@@ -10,16 +10,20 @@ from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import List, Optional
 import httpx
 import json
 import time
 import re
 import base64
+import hashlib
+import hmac
 import os
 import asyncio
+import smtplib
 from datetime import datetime, timedelta, timezone
+from email.message import EmailMessage
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from dotenv import load_dotenv
@@ -188,6 +192,10 @@ def find_user_record(users: dict, username: str):
 class User(BaseModel):
     email: str
     username: str
+    display_name: Optional[str] = None
+    location: Optional[str] = None
+    profession: Optional[str] = None
+    bio: Optional[str] = None
 
 class UserRegister(BaseModel):
     email: str
@@ -197,6 +205,19 @@ class UserRegister(BaseModel):
 class UserLogin(BaseModel):
     username: str
     password: str
+
+class UserProfileUpdate(BaseModel):
+    display_name: str = Field(default="", max_length=100)
+    location: str = Field(default="", max_length=100)
+    profession: str = Field(default="", max_length=100)
+    bio: str = Field(default="", max_length=500)
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str
 
 class Token(BaseModel):
     access_token: str
@@ -243,7 +264,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     if user_data is None:
         raise HTTPException(status_code=401, detail="User not found")
     
-    return User(email=user_data["email"], username=user_data["username"])
+    return User(
+        email=user_data["email"],
+        username=user_data["username"],
+        display_name=user_data.get("display_name"),
+        location=user_data.get("location"),
+        profession=user_data.get("profession"),
+        bio=user_data.get("bio")
+    )
 
 def is_admin(user: User) -> bool:
     """Check if user is an admin."""
@@ -257,6 +285,15 @@ GEMINI_API_KEYS = [
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+SMTP_HOST = os.environ.get("SMTP_HOST", "")
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USERNAME = os.environ.get("SMTP_USERNAME", "")
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+SMTP_FROM_EMAIL = os.environ.get("SMTP_FROM_EMAIL", "")
+SMTP_USE_TLS = os.environ.get("SMTP_USE_TLS", "true").lower() == "true"
+SMTP_USE_SSL = os.environ.get("SMTP_USE_SSL", "false").lower() == "true"
+FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "https://confamit.vercel.app")
+PASSWORD_RESET_EXPIRE_MINUTES = 30
 
 # Key rotation state
 key_cooldowns = {key: 0 for key in GEMINI_API_KEYS}
@@ -1161,6 +1198,37 @@ def build_explanation_statements(score: float, verdict: str, reasoning: str = ''
 
 # --- Authentication Endpoints ---
 
+def send_password_reset_email(recipient: str, reset_url: str) -> None:
+    """Send a one-time password reset link over the configured SMTP relay."""
+    message = EmailMessage()
+    message["Subject"] = "Reset your iConfam password"
+    message["From"] = SMTP_FROM_EMAIL
+    message["To"] = recipient
+    message.set_content(
+        "We received a request to reset your iConfam password.\n\n"
+        f"Use this link within {PASSWORD_RESET_EXPIRE_MINUTES} minutes:\n{reset_url}\n\n"
+        "If you did not request a password reset, you can ignore this email."
+    )
+
+    try:
+        if SMTP_USE_SSL:
+            with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+                if SMTP_USERNAME:
+                    server.login(SMTP_USERNAME, SMTP_PASSWORD)
+                server.send_message(message)
+            return
+
+        with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=15) as server:
+            if SMTP_USE_TLS:
+                server.starttls()
+            if SMTP_USERNAME:
+                server.login(SMTP_USERNAME, SMTP_PASSWORD)
+            server.send_message(message)
+    except (OSError, smtplib.SMTPException) as exc:
+        print(f"Password reset email delivery failed: {exc}")
+        raise HTTPException(status_code=503, detail="Could not send password reset email. Please try again later.") from exc
+
+
 @app.post("/auth/register", response_model=Token)
 async def register(user_data: UserRegister):
     """Register a new user."""
@@ -1209,6 +1277,100 @@ async def register(user_data: UserRegister):
         "user": User(email=email, username=username)
     }
 
+@app.post("/auth/forgot-password")
+async def forgot_password(request: ForgotPasswordRequest):
+    """Email a time-limited password-reset link without disclosing account existence."""
+    if not SMTP_HOST or not SMTP_FROM_EMAIL:
+        raise HTTPException(status_code=503, detail="Password reset email is not configured on the server.")
+
+    email = request.email.strip()
+    users = load_users()
+    user_record = next(
+        (user for user in users.values() if user.get("email", "").lower() == email.lower()),
+        None
+    )
+
+    if user_record:
+        last_requested_at = user_record.get("password_reset_requested_at")
+        if last_requested_at:
+            try:
+                if not isinstance(last_requested_at, str):
+                    raise ValueError("Invalid reset request timestamp")
+                last_requested = datetime.fromisoformat(last_requested_at)
+            except ValueError:
+                last_requested = datetime.min.replace(tzinfo=timezone.utc)
+            if last_requested.tzinfo is None:
+                last_requested = last_requested.replace(tzinfo=timezone.utc)
+            if datetime.now(timezone.utc) - last_requested < timedelta(minutes=1):
+                return {"message": "If an account exists for that email, a password reset link has been sent."}
+
+        reset_token = secrets.token_urlsafe(32)
+        user_record["password_reset_token_hash"] = hashlib.sha256(reset_token.encode("utf-8")).hexdigest()
+        user_record["password_reset_expires_at"] = (
+            datetime.now(timezone.utc) + timedelta(minutes=PASSWORD_RESET_EXPIRE_MINUTES)
+        ).isoformat()
+        user_record["password_reset_requested_at"] = datetime.now(timezone.utc).isoformat()
+        save_users(users)
+
+        reset_url = (
+            f"{FRONTEND_BASE_URL.rstrip('/')}/reset-password.html"
+            f"?token={reset_token}"
+        )
+        try:
+            await asyncio.to_thread(send_password_reset_email, email, reset_url)
+        except HTTPException:
+            user_record.pop("password_reset_token_hash", None)
+            user_record.pop("password_reset_expires_at", None)
+            user_record.pop("password_reset_requested_at", None)
+            save_users(users)
+            raise
+
+    return {"message": "If an account exists for that email, a password reset link has been sent."}
+
+@app.post("/auth/reset-password")
+async def reset_password(request: ResetPasswordRequest):
+    """Reset an account password using a valid, unexpired, single-use token."""
+    if len(request.new_password) < 8:
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters")
+    if not request.token:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset link")
+
+    token_hash = hashlib.sha256(request.token.encode("utf-8")).hexdigest()
+    users = load_users()
+    matched_user = None
+    for user in users.values():
+        stored_hash = user.get("password_reset_token_hash", "")
+        if stored_hash and hmac.compare_digest(stored_hash, token_hash):
+            matched_user = user
+            break
+
+    if not matched_user:
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset link")
+
+    try:
+        expires_at_value = matched_user.get("password_reset_expires_at")
+        if not isinstance(expires_at_value, str):
+            raise ValueError("Missing reset-token expiry")
+        expires_at = datetime.fromisoformat(expires_at_value)
+    except ValueError:
+        expires_at = datetime.min.replace(tzinfo=timezone.utc)
+
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    if expires_at <= datetime.now(timezone.utc):
+        matched_user.pop("password_reset_token_hash", None)
+        matched_user.pop("password_reset_expires_at", None)
+        matched_user.pop("password_reset_requested_at", None)
+        save_users(users)
+        raise HTTPException(status_code=400, detail="Invalid or expired password reset link")
+
+    matched_user["password_hash"] = hash_password(request.new_password)
+    matched_user.pop("password_reset_token_hash", None)
+    matched_user.pop("password_reset_expires_at", None)
+    matched_user.pop("password_reset_requested_at", None)
+    save_users(users)
+    return {"message": "Password reset successfully. You can now sign in with your new password."}
+
 @app.post("/auth/login", response_model=Token)
 async def login(user_data: UserLogin):
     """Login user and return JWT token."""
@@ -1232,7 +1394,14 @@ async def login(user_data: UserLogin):
     return {
         "access_token": access_token,
         "token_type": "bearer",
-        "user": User(email=user["email"], username=canonical_username)
+        "user": User(
+            email=user["email"],
+            username=canonical_username,
+            display_name=user.get("display_name"),
+            location=user.get("location"),
+            profession=user.get("profession"),
+            bio=user.get("bio")
+        )
     }
 
 @app.get("/auth/me", response_model=User)
@@ -1244,6 +1413,33 @@ async def get_me(current_user: User = Depends(get_current_user)):
 async def logout(current_user: User = Depends(get_current_user)):
     """Logout user (client-side token removal)."""
     return {"message": "Logged out successfully"}
+
+@app.put("/user", response_model=User)
+async def update_user_profile(
+    profile: UserProfileUpdate,
+    current_user: User = Depends(get_current_user)
+):
+    """Update profile details for the authenticated account."""
+    users = load_users()
+    user_record = find_user_record(users, current_user.username)[1]
+    if not user_record:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    user_record.update({
+        "display_name": profile.display_name.strip(),
+        "location": profile.location.strip(),
+        "profession": profile.profession.strip(),
+        "bio": profile.bio.strip()
+    })
+    save_users(users)
+    return User(
+        email=user_record["email"],
+        username=user_record["username"],
+        display_name=user_record.get("display_name"),
+        location=user_record.get("location"),
+        profession=user_record.get("profession"),
+        bio=user_record.get("bio")
+    )
 
 @app.get("/")
 async def root():
