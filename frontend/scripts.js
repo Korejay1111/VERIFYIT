@@ -80,8 +80,11 @@ function initCharCount() {
   });
 }
 
-const BASE_API_URL = "https://verifyit-3.onrender.com";
-// (window.location.origin && window.location.origin !== 'null') ? window.location.origin : 'http://127.0.0.1:8000';
+const BASE_API_URL = window.VERIFYIT_API_BASE_URL || (
+  ['localhost', '127.0.0.1'].includes(window.location.hostname)
+    ? 'http://127.0.0.1:8000'
+    : 'https://verifyit-3.onrender.com'
+);
 // --- Image Upload ---
 function initImageUpload() {
   const zone = document.getElementById('imageUploadZone');
@@ -1834,7 +1837,9 @@ async function verifyImage() {
     const message = error.message || 'Unknown error';
     const hint = message.includes('Not authenticated')
       ? 'Please log in first to verify content.'
-      : 'Please ensure the backend server is running.';
+      : error instanceof TypeError
+        ? 'Could not reach the verification API. Check the API address and backend availability.'
+        : 'The verification API returned an error. See the details below.';
     resultsDiv.innerHTML = `
       <div class="loading-overlay">
         <div style="font-size: 2rem; margin-bottom: 0.5rem;">❌</div>
@@ -1961,9 +1966,9 @@ function renderResults(container, data, type) {
   }
 
   // Breakdown scores
-  const bertScore = Math.round((data.bert_score || 0) * 100);
-  const llmScore = Math.round((data.llm_score || 0) * 100);
-  const webScore = Math.round((data.web_score || 0) * 100);
+  const bertScore = data.bert_score == null ? null : Math.round(data.bert_score);
+  const llmScore = data.llm_score == null ? null : Math.round(data.llm_score);
+  const webScore = data.web_score == null ? null : Math.round(data.web_score);
 
   // Gauge SVG
   const circumference = 2 * Math.PI * 46;
@@ -2003,25 +2008,34 @@ function renderResults(container, data, type) {
           <div class="breakdown-item">
             <span class="breakdown-label">BERT Model</span>
             <div class="breakdown-bar">
-              <div class="breakdown-fill" style="width: ${bertScore}%; background: var(--accent-primary);"></div>
+              <div class="breakdown-fill" style="width: ${bertScore ?? 0}%; background: var(--accent-primary);"></div>
             </div>
-            <span class="breakdown-value" style="color: var(--accent-primary);">${bertScore}%</span>
+            <span class="breakdown-value" style="color: var(--accent-primary);">${bertScore == null ? 'Unavailable' : `${bertScore}%`}</span>
           </div>
           <div class="breakdown-item">
             <span class="breakdown-label">LLM Analysis</span>
             <div class="breakdown-bar">
-              <div class="breakdown-fill" style="width: ${llmScore}%; background: var(--accent-secondary);"></div>
+              <div class="breakdown-fill" style="width: ${llmScore ?? 0}%; background: var(--accent-secondary);"></div>
             </div>
-            <span class="breakdown-value" style="color: var(--accent-secondary);">${llmScore}%</span>
+            <span class="breakdown-value" style="color: var(--accent-secondary);">${llmScore == null ? 'Unavailable' : `${llmScore}%`}</span>
           </div>
           <div class="breakdown-item">
             <span class="breakdown-label">Web Search</span>
             <div class="breakdown-bar">
-              <div class="breakdown-fill" style="width: ${webScore}%; background: var(--accent-tertiary);"></div>
+              <div class="breakdown-fill" style="width: ${webScore ?? 0}%; background: var(--accent-tertiary);"></div>
             </div>
-            <span class="breakdown-value" style="color: var(--accent-tertiary);">${webScore}%</span>
+            <span class="breakdown-value" style="color: var(--accent-tertiary);">${webScore == null ? 'Unavailable' : `${webScore}%`}</span>
           </div>
         </div>
+
+        ${Array.isArray(data.provider_errors) && data.provider_errors.length ? `
+          <div role="status" style="margin-top: 1rem; color: var(--text-muted); font-size: 0.85rem;">
+            <strong>Provider status</strong>
+            <ul style="margin: 0.35rem 0 0; padding-left: 1.2rem;">
+              ${data.provider_errors.map(error => `<li>${escapeHtml(error)}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
 
         ${reasoning ? `
           <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color);">

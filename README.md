@@ -107,24 +107,12 @@ python -c "from transformers import AutoTokenizer, AutoModelForSequenceClassific
 
 ---
 
-### Step 4: Add Your API Key
+### Step 4: Configure AI API Keys
 
-Open `app.py` and find line ~59. Replace the API key:
-
-```python
-GEMINI_API_KEYS = [
-    "YOUR-GEMINI-API-KEY-HERE",  # Add your key here
-    ...
-]
-```
-
-**Or use environment variables:**
-
-| OS                     | Command                             |
-| ---------------------- | ----------------------------------- |
-| **Windows PowerShell** | `$env:GEMINI_API_KEY_1 = "AIza..."` |
-| **Windows CMD**        | `set GEMINI_API_KEY_1=AIza...`      |
-| **Linux/Mac**          | `export GEMINI_API_KEY_1="AIza..."` |
+Copy `.env.example` to `.env` in the project root and add your Groq API key and
+one or more Gemini API keys. Separate multiple Gemini keys with commas. The
+default Groq and Gemini model IDs are configured there; keep the keys out of
+source control.
 
 ---
 
@@ -310,7 +298,8 @@ pip install -r requirements.txt
 ### Backend not reachable from frontend
 
 - Make sure backend is running on port **8000**
-- Check that `scripts.js` has: `const API_BASE_URL = 'http://127.0.0.1:8000'`
+- Localhost frontends automatically use the backend at `http://127.0.0.1:8000`; deployed frontends use the hosted API.
+- Set `window.VERIFYIT_API_BASE_URL` before loading the frontend scripts to override the API address.
 
 ### CORS errors
 

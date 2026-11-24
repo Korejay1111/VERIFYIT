@@ -255,7 +255,8 @@ GEMINI_API_KEYS = [
     key.strip() for key in os.environ.get("GEMINI_API_KEYS", "").split(",") if key.strip()
 ]
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-GROQ_MODEL = "llama-3.3-70b-versatile"
+GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 
 # Key rotation state
 key_cooldowns = {key: 0 for key in GEMINI_API_KEYS}
@@ -388,34 +389,46 @@ async def analyze_with_bert(text: str) -> dict:
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
                 "https://api-inference.huggingface.co/models/jy46604790/Fake-News-BERT-Detect",
-                json={"inputs": text[:512]},
+                json={"inputs": text[:512], "parameters": {"top_k": 2}},
                 headers={"Content-Type": "application/json"}
             )
 
             if response.status_code == 200:
                 result = response.json()
-                if isinstance(result, list) and len(result) > 0:
-                    # result is like [{"label": "LABEL_0", "score": 0.9}, ...]
-                    scores = {item['label']: item['score'] for item in result}
-                    # LABEL_0 = fake, LABEL_1 = real (common convention)
+                if isinstance(result, list) and result and isinstance(result[0], list):
+                    result = result[0]
+                if isinstance(result, list) and result:
+                    scores = {
+                        str(item.get('label', '')).upper(): float(item.get('score', 0))
+                        for item in result if isinstance(item, dict)
+                    }
                     fake_score = scores.get('LABEL_0', scores.get('FAKE', 0))
                     real_score = scores.get('LABEL_1', scores.get('REAL', 0))
-                    bert_score = real_score / (real_score + fake_score) if (real_score + fake_score) > 0 else 0.5
+                    if real_score and fake_score:
+                        bert_score = real_score / (real_score + fake_score)
+                    elif real_score:
+                        bert_score = real_score
+                    elif fake_score:
+                        bert_score = 1 - fake_score
+                    else:
+                        return {"available": False, "error": "BERT returned no recognized class scores"}
                     return {
+                        "available": True,
                         "score": round(bert_score, 4),
                         "label": "REAL" if bert_score > 0.5 else "FAKE",
                         "raw": result
                     }
-            return {"score": 0.5, "label": "UNCERTAIN", "raw": None}
+                return {"available": False, "error": "BERT returned an unexpected response"}
+            return {"available": False, "error": f"BERT API error: {response.status_code}"}
     except Exception as e:
         print(f"BERT analysis error: {e}")
-        return {"score": 0.5, "label": "UNCERTAIN", "raw": None}
+        return {"available": False, "error": f"BERT analysis error: {e}"}
 
 # --- Groq LLM Analysis ---
 async def analyze_with_groq(text: str, language: str = "en") -> dict:
-    """Analyze text using Groq LLaMA 3.1 70B for credibility assessment."""
+    """Analyze text using Groq for credibility assessment."""
     if not GROQ_API_KEY:
-        return {"score": 0.5, "analysis": "Groq API key not configured"}
+        return {"available": False, "error": "Groq API key not configured"}
 
     language_name = {
         'en': 'English',
@@ -481,36 +494,41 @@ Respond ONLY with valid JSON and in {respond_language}."""
                 }
             )
 
-            if response.status_code == 200:
-                data = response.json()
-                content = data['choices'][0]['message']['content']
-
-                # Try to parse JSON from response
+            if response.status_code != 200:
                 try:
-                    # Handle potential markdown code blocks
-                    json_match = re.search(r'\{[\s\S]*\}', content)
-                    if json_match:
-                        result = json.loads(json_match.group())
-                        return {
-                            "score": min(max(float(result.get('score', 0.5)), 0.0), 1.0),
-                            "analysis": result.get('reasoning', content),
-                            "red_flags": result.get('red_flags', [])
-                        }
-                except (json.JSONDecodeError, ValueError):
-                    pass
+                    error_body = response.json().get("error", "")
+                    if isinstance(error_body, dict):
+                        error_body = error_body.get("message", "")
+                except (ValueError, AttributeError):
+                    error_body = ""
+                detail = f": {error_body}" if error_body else ""
+                return {
+                    "available": False,
+                    "error": f"Groq API error: {response.status_code}{detail}"
+                }
 
-                return {"score": 0.5, "analysis": content}
-
-            return {"score": 0.5, "analysis": f"Groq API error: {response.status_code}"}
+            data = response.json()
+            content = data.get('choices', [{}])[0].get('message', {}).get('content', '')
+            json_match = re.search(r'\{[\s\S]*\}', content)
+            if json_match:
+                result = json.loads(json_match.group())
+                score = min(max(float(result['score']), 0.0), 1.0)
+                return {
+                    "available": True,
+                    "score": score,
+                    "analysis": result.get('reasoning', content),
+                    "red_flags": result.get('red_flags', [])
+                }
+            return {"available": False, "error": "Groq returned no valid score"}
     except Exception as e:
         print(f"Groq analysis error: {e}")
-        return {"score": 0.5, "analysis": f"Error: {str(e)}"}
+        return {"available": False, "error": f"Groq analysis error: {e}"}
 
 # --- Web Search Verification ---
 async def verify_with_web_search(text: str, language: str = "en") -> dict:
     """Cross-reference claims using DuckDuckGo search and Google News RSS."""
     sources = []
-    web_score = 0.5
+    web_score = None
 
     try:
         # Extract key search terms from text
@@ -596,16 +614,18 @@ async def verify_with_web_search(text: str, language: str = "en") -> dict:
         print(f"Web search error: {e}")
 
     return {
-        "score": round(web_score, 4),
-        "sources": sources[:10]
+        "available": bool(sources),
+        "score": round(web_score, 4) if web_score is not None else None,
+        "sources": sources[:10],
+        "error": None if sources else "No matching web sources were found"
     }
 
 # --- Gemini Vision Analysis ---
 async def analyze_image_with_gemini(image_base64: str, filename: str, language: str = "en") -> dict:
-    """Analyze image using Gemini 2.0 Flash Vision API."""
+    """Analyze image using the configured Gemini Flash Vision model."""
     api_key = get_next_gemini_key()
     if not api_key:
-        return {"score": 0.5, "analysis": "No Gemini API keys configured"}
+        return {"available": False, "error": "No Gemini API keys configured"}
 
     try:
         # Determine mime type from filename
@@ -673,7 +693,7 @@ Respond ONLY with valid JSON and in {language_name}."""
 
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}",
                 json=payload
             )
 
@@ -682,8 +702,8 @@ Respond ONLY with valid JSON and in {language_name}."""
                 # Try next key
                 next_key = get_next_gemini_key()
                 if next_key and next_key != api_key:
-                    return await analyze_image_with_gemini(image_base64, filename)
-                return {"score": 0.5, "analysis": "API rate limit reached"}
+                    return await analyze_image_with_gemini(image_base64, filename, language)
+                return {"available": False, "error": "Gemini API rate limit reached"}
 
             if response.status_code == 200:
                 data = response.json()
@@ -693,20 +713,26 @@ Respond ONLY with valid JSON and in {language_name}."""
                     if json_match:
                         result = json.loads(json_match.group())
                         return {
-                            "score": min(max(float(result.get('score', 0.5)), 0.0), 1.0),
+                            "available": True,
+                            "score": min(max(float(result['score']), 0.0), 1.0),
                             "analysis": result.get('reasoning', ''),
                             "extracted_text": result.get('extracted_text', ''),
                             "manipulation_indicators": result.get('manipulation_indicators', [])
                         }
-                except (json.JSONDecodeError, KeyError, IndexError):
+                except (json.JSONDecodeError, KeyError, IndexError, TypeError, ValueError):
                     pass
-                return {"score": 0.5, "analysis": "Could not parse Gemini response"}
+                return {"available": False, "error": "Could not parse Gemini response"}
 
-            return {"score": 0.5, "analysis": f"Gemini API error: {response.status_code}"}
+            try:
+                error_body = response.json().get("error", {}).get("message", "")
+            except (ValueError, AttributeError):
+                error_body = ""
+            detail = f": {error_body}" if error_body else ""
+            return {"available": False, "error": f"Gemini API error: {response.status_code}{detail}"}
 
     except Exception as e:
         print(f"Gemini analysis error: {e}")
-        return {"score": 0.5, "analysis": f"Error: {str(e)}"}
+        return {"available": False, "error": f"Gemini analysis error: {e}"}
 
 async def extract_text_with_gemini(image_base64: str, filename: str, language: str = "en") -> str:
     """Fallback text extraction using Gemini Vision if OCR fails."""
@@ -759,7 +785,7 @@ Respond ONLY with valid JSON and in {language_name}."""
 
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
-                f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}",
+                f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent?key={api_key}",
                 json=payload
             )
 
@@ -772,24 +798,12 @@ Respond ONLY with valid JSON and in {language_name}."""
 
             if response.status_code == 200:
                 data = response.json()
-                content = ''
-                try:
-                    candidates = data.get('candidates', [])
-                    for candidate in candidates:
-                        for part in candidate.get('content', []):
-                            if isinstance(part, dict):
-                                content += part.get('text', '')
-                            elif isinstance(part, str):
-                                content += part
-                except Exception:
-                    pass
-
-                if not content:
-                    # Fallback for alternate Gemini response shapes
-                    try:
-                        content = data['candidates'][0]['content'][0]['text']
-                    except Exception:
-                        content = ''
+                candidates = data.get('candidates', [])
+                parts = candidates[0].get('content', {}).get('parts', []) if candidates else []
+                content = '\n'.join(
+                    part.get('text', '') for part in parts
+                    if isinstance(part, dict) and part.get('text')
+                )
 
                 if content:
                     json_match = re.search(r'\{[\s\S]*\}', content)
@@ -951,9 +965,26 @@ async def extract_text_with_ocr(image_base64: str, filename: str, language: str 
         return ""
 
 # --- Score Fusion ---
-def fuse_scores(bert_score: float, llm_score: float, web_score: float) -> float:
-    """Weighted combination: BERT 25%, LLM 35%, Web 40%"""
-    return round((bert_score * 0.25 + llm_score * 0.35 + web_score * 0.40) * 100, 1)
+def fuse_available_scores(*weighted_results: tuple[dict, float]) -> Optional[float]:
+    """Fuse only successful provider results, renormalizing their configured weights."""
+    available = [
+        (result["score"], weight)
+        for result, weight in weighted_results
+        if result.get("available") and isinstance(result.get("score"), (int, float))
+    ]
+    total_weight = sum(item[1] for item in available)
+    if not total_weight:
+        return None
+    weighted_score = sum(item[0] * item[1] for item in available) / total_weight
+    return round(weighted_score * 100, 1)
+
+
+def collect_provider_errors(*providers: tuple[str, dict]) -> list[str]:
+    return [
+        f"{name}: {result.get('error')}"
+        for name, result in providers
+        if not result.get("available") and result.get("error")
+    ]
 
 def get_verdict(score: float) -> str:
     if score >= 70:
@@ -1243,19 +1274,19 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
     # Run all analyses concurrently, but keep each dependency on a short leash.
     bert_task = safe_model_call(
         analyze_with_bert(text),
-        {"score": 0.5, "label": "UNCERTAIN", "raw": None},
+        {"available": False, "error": "BERT analysis timed out"},
         "BERT",
         12
     )
     groq_task = safe_model_call(
         analyze_with_groq(text, request.language),
-        {"score": 0.5, "analysis": "Groq analysis unavailable", "red_flags": []},
+        {"available": False, "error": "Groq analysis timed out"},
         "Groq",
         15
     )
     web_task = safe_model_call(
         verify_with_web_search(text, request.language),
-        {"score": 0.5, "sources": []},
+        {"available": False, "score": None, "sources": [], "error": "Web search timed out"},
         "Web search",
         12
     )
@@ -1264,19 +1295,26 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
         bert_task, groq_task, web_task
     )
 
-    # Fuse scores
-    credibility_score = fuse_scores(
-        bert_result['score'],
-        groq_result['score'],
-        web_result['score']
+    credibility_score = fuse_available_scores(
+        (bert_result, 0.25),
+        (groq_result, 0.35),
+        (web_result, 0.40)
     )
+    provider_errors = collect_provider_errors(
+        ("BERT", bert_result),
+        ("Groq", groq_result),
+        ("Web search", web_result)
+    )
+    if credibility_score is None:
+        detail = "; ".join(provider_errors) or "No verification provider returned a usable result"
+        raise HTTPException(status_code=503, detail=f"Verification unavailable: {detail}")
 
     verdict = get_verdict(credibility_score)
 
     explanations = build_explanation_statements(
         credibility_score / 100,
         verdict,
-        groq_result.get('analysis', ''),
+        groq_result.get('analysis', groq_result.get('error', '')),
         web_result.get('sources', []),
         groq_result.get('red_flags', []),
         [],
@@ -1288,12 +1326,13 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
     result = {
         "credibility_score": credibility_score,
         "verdict": verdict,
-        "bert_score": round(bert_result['score'] * 100, 1),
-        "llm_score": round(groq_result['score'] * 100, 1),
-        "web_score": round(web_result['score'] * 100, 1),
-        "reasoning": groq_result.get('analysis', ''),
+        "bert_score": round(bert_result['score'] * 100, 1) if bert_result.get('available') else None,
+        "llm_score": round(groq_result['score'] * 100, 1) if groq_result.get('available') else None,
+        "web_score": round(web_result['score'] * 100, 1) if web_result.get('available') else None,
+        "reasoning": groq_result.get('analysis', groq_result.get('error', '')),
         "sources": web_result.get('sources', []),
         "red_flags": groq_result.get('red_flags', []),
+        "provider_errors": provider_errors,
         "explanations": explanations,
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -1321,7 +1360,7 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
     # Step 1: Analyze image with Gemini Vision
     gemini_result = await safe_model_call(
         analyze_image_with_gemini(request.image, request.filename, request.language),
-        {"score": 0.5, "analysis": "Gemini vision unavailable", "extracted_text": "", "manipulation_indicators": []},
+        {"available": False, "error": "Gemini vision timed out", "extracted_text": "", "manipulation_indicators": []},
         "Gemini vision",
         20
     )
@@ -1332,31 +1371,32 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
         extracted_text = await extract_text_with_ocr(request.image, request.filename, request.language)
     except Exception as e:
         print(f"OCR fallback: {e}")
+    if not extracted_text:
         extracted_text = gemini_result.get('extracted_text', '')
 
     # Step 3: If text extracted, also run text verification
-    bert_score = 0.5
-    groq_score = 0.5
-    web_score = 0.5
-    groq_analysis = gemini_result.get('analysis', '')
+    bert_result = {"available": False, "error": "Image contains no readable text"}
+    groq_result = {"available": False, "error": "Image contains no readable text", "red_flags": []}
+    web_result = {"available": False, "score": None, "sources": [], "error": "Image contains no readable text"}
+    groq_analysis = gemini_result.get('analysis', gemini_result.get('error', ''))
     sources = []
 
     if extracted_text and len(extracted_text) > 20:
         bert_task = safe_model_call(
             analyze_with_bert(extracted_text),
-            {"score": 0.5, "label": "UNCERTAIN", "raw": None},
+            {"available": False, "error": "BERT analysis timed out"},
             "BERT",
             12
         )
         groq_task = safe_model_call(
             analyze_with_groq(extracted_text, request.language),
-            {"score": 0.5, "analysis": "Groq analysis unavailable", "red_flags": []},
+            {"available": False, "error": "Groq analysis timed out", "red_flags": []},
             "Groq",
             15
         )
         web_task = safe_model_call(
             verify_with_web_search(extracted_text, request.language),
-            {"score": 0.5, "sources": []},
+            {"available": False, "score": None, "sources": [], "error": "Web search timed out"},
             "Web search",
             12
         )
@@ -1365,19 +1405,35 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
             bert_task, groq_task, web_task
         )
 
-        bert_score = bert_result['score']
-        groq_score = groq_result['score']
-        web_score = web_result['score']
-        groq_analysis = groq_result.get('analysis', gemini_result.get('analysis', ''))
+        groq_analysis = groq_result.get(
+            'analysis',
+            gemini_result.get('analysis', groq_result.get('error', ''))
+        )
         sources = web_result.get('sources', [])
 
-    # Combine Gemini vision score with text analysis
-    gemini_score = gemini_result.get('score', 0.5)
-    credibility_score = fuse_scores(bert_score, groq_score, web_score)
+    text_was_extracted = bool(extracted_text and len(extracted_text) > 20)
+    image_scores = []
+    if gemini_result.get('available'):
+        image_scores.append((gemini_result, 0.30 if text_was_extracted else 1.0))
+    if text_was_extracted:
+        image_scores.extend([
+            (bert_result, 0.175),
+            (groq_result, 0.245),
+            (web_result, 0.28)
+        ])
 
-    # If no text was found, rely more on Gemini vision
-    if not extracted_text or len(extracted_text) <= 20:
-        credibility_score = round(gemini_score * 100, 1)
+    credibility_score = fuse_available_scores(*image_scores)
+    providers = [("Gemini vision", gemini_result)]
+    if text_was_extracted:
+        providers.extend([
+            ("BERT", bert_result),
+            ("Groq", groq_result),
+            ("Web search", web_result)
+        ])
+    provider_errors = collect_provider_errors(*providers)
+    if credibility_score is None:
+        detail = "; ".join(provider_errors) or "No verification provider returned a usable result"
+        raise HTTPException(status_code=503, detail=f"Image verification unavailable: {detail}")
 
     verdict = get_verdict(credibility_score)
 
@@ -1386,9 +1442,9 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
         verdict,
         groq_analysis,
         sources,
+        groq_result.get('red_flags', []),
+        gemini_result.get('manipulation_indicators', []),
         [],
-        gemini_result.get('manipulation_indicators', []),
-        gemini_result.get('manipulation_indicators', []),
         None,
         request.language
     )
@@ -1396,13 +1452,15 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
     result = {
         "credibility_score": credibility_score,
         "verdict": verdict,
-        "bert_score": round(bert_score * 100, 1),
-        "llm_score": round(groq_score * 100, 1),
-        "web_score": round(web_score * 100, 1),
+        "bert_score": round(bert_result['score'] * 100, 1) if bert_result.get('available') else None,
+        "llm_score": round(groq_result['score'] * 100, 1) if groq_result.get('available') else None,
+        "web_score": round(web_result['score'] * 100, 1) if web_result.get('available') else None,
+        "vision_score": round(gemini_result['score'] * 100, 1) if gemini_result.get('available') else None,
         "reasoning": groq_analysis,
         "extracted_text": extracted_text,
         "manipulation_indicators": gemini_result.get('manipulation_indicators', []),
         "sources": sources,
+        "provider_errors": provider_errors,
         "explanations": explanations,
         "timestamp": datetime.utcnow().isoformat()
     }
@@ -1515,29 +1573,49 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
         cached['url'] = url
         return cached
 
-    # Run analyses
-    import asyncio
-    bert_task = analyze_with_bert(full_text)
-    groq_task = analyze_with_groq(full_text, request.language)
-    web_task = verify_with_web_search(full_text, request.language)
+    bert_task = safe_model_call(
+        analyze_with_bert(full_text),
+        {"available": False, "error": "BERT analysis timed out"},
+        "BERT",
+        12
+    )
+    groq_task = safe_model_call(
+        analyze_with_groq(full_text, request.language),
+        {"available": False, "error": "Groq analysis timed out"},
+        "Groq",
+        15
+    )
+    web_task = safe_model_call(
+        verify_with_web_search(full_text, request.language),
+        {"available": False, "score": None, "sources": [], "error": "Web search timed out"},
+        "Web search",
+        12
+    )
 
     bert_result, groq_result, web_result = await asyncio.gather(
         bert_task, groq_task, web_task
     )
 
-    # Fuse scores
-    credibility_score = fuse_scores(
-        bert_result['score'],
-        groq_result['score'],
-        web_result['score']
+    credibility_score = fuse_available_scores(
+        (bert_result, 0.25),
+        (groq_result, 0.35),
+        (web_result, 0.40)
     )
+    provider_errors = collect_provider_errors(
+        ("BERT", bert_result),
+        ("Groq", groq_result),
+        ("Web search", web_result)
+    )
+    if credibility_score is None:
+        detail = "; ".join(provider_errors) or "No verification provider returned a usable result"
+        raise HTTPException(status_code=503, detail=f"Verification unavailable: {detail}")
 
     verdict = get_verdict(credibility_score)
 
     explanations = build_explanation_statements(
         credibility_score / 100,
         verdict,
-        groq_result.get('analysis', ''),
+        groq_result.get('analysis', groq_result.get('error', '')),
         web_result.get('sources', []),
         groq_result.get('red_flags', []),
         [],
@@ -1548,12 +1626,13 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
     result = {
         "credibility_score": credibility_score,
         "verdict": verdict,
-        "bert_score": round(bert_result['score'] * 100, 1),
-        "llm_score": round(groq_result['score'] * 100, 1),
-        "web_score": round(web_result['score'] * 100, 1),
-        "reasoning": groq_result.get('analysis', ''),
+        "bert_score": round(bert_result['score'] * 100, 1) if bert_result.get('available') else None,
+        "llm_score": round(groq_result['score'] * 100, 1) if groq_result.get('available') else None,
+        "web_score": round(web_result['score'] * 100, 1) if web_result.get('available') else None,
+        "reasoning": groq_result.get('analysis', groq_result.get('error', '')),
         "sources": web_result.get('sources', []),
         "red_flags": groq_result.get('red_flags', []),
+        "provider_errors": provider_errors,
         "title": title,
         "url": url,
         "extracted_content": content[:1000] + "..." if len(content) > 1000 else content,
