@@ -284,6 +284,7 @@ GEMINI_API_KEYS = [
 ]
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
 GROQ_MODEL = os.environ.get("GROQ_MODEL", "openai/gpt-oss-120b")
+HUGGINGFACE_API_TOKEN = os.environ.get("HUGGINGFACE_API_TOKEN", os.environ.get("HF_TOKEN", ""))
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 SMTP_HOST = os.environ.get("SMTP_HOST", "")
 SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
@@ -422,12 +423,18 @@ async def safe_model_call(coro, default_value, label: str, timeout_seconds: int 
 # --- BERT Analysis ---
 async def analyze_with_bert(text: str) -> dict:
     """Analyze text using BERT fake news detection model via HuggingFace API."""
+    if not HUGGINGFACE_API_TOKEN:
+        return {"available": False, "error": "Hugging Face API token not configured"}
+
     try:
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
-                "https://api-inference.huggingface.co/models/jy46604790/Fake-News-BERT-Detect",
+                "https://router.huggingface.co/hf-inference/models/jy46604790/Fake-News-Bert-Detect",
                 json={"inputs": text[:512], "parameters": {"top_k": 2}},
-                headers={"Content-Type": "application/json"}
+                headers={
+                    "Authorization": f"Bearer {HUGGINGFACE_API_TOKEN}",
+                    "Content-Type": "application/json"
+                }
             )
 
             if response.status_code == 200:
@@ -502,13 +509,13 @@ Consider Nigerian-specific factors:
 If the claim may be outdated, uncertain, or lacks current evidence, state that clearly rather than inventing new facts.
 If you cannot verify a claim with 2026 knowledge, say it is uncertain or likely outdated instead of repeating old titles or positions.
 
-Provide your analysis in the following JSON format:
+Provide your analysis matching this JSON schema:
 {{
-    "score": <float between 0.0 and 1.0>,
-    "reasoning": "<brief explanation of your assessment>",
-    "claims_identified": <number of distinct claims found>,
-    "red_flags": ["<list of potential red flags>"],
-    "nigerian_context": "<any relevant Nigerian context or considerations>"
+    "score": 0.0,
+    "reasoning": "brief explanation of your assessment",
+    "claims_identified": 0,
+    "red_flags": ["potential red flag"],
+    "nigerian_context": "relevant Nigerian context or considerations"
 }}
 
 Text to analyze:
@@ -527,7 +534,35 @@ Respond ONLY with valid JSON and in {respond_language}."""
                     "model": GROQ_MODEL,
                     "messages": [{"role": "user", "content": prompt}],
                     "temperature": 0.3,
-                    "max_tokens": 500
+                    "max_completion_tokens": 600,
+                    "response_format": {
+                        "type": "json_schema",
+                        "json_schema": {
+                            "name": "credibility_assessment",
+                            "strict": True,
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "score": {"type": "number"},
+                                    "reasoning": {"type": "string"},
+                                    "claims_identified": {"type": "integer"},
+                                    "red_flags": {
+                                        "type": "array",
+                                        "items": {"type": "string"}
+                                    },
+                                    "nigerian_context": {"type": "string"}
+                                },
+                                "required": [
+                                    "score",
+                                    "reasoning",
+                                    "claims_identified",
+                                    "red_flags",
+                                    "nigerian_context"
+                                ],
+                                "additionalProperties": False
+                            }
+                        }
+                    }
                 }
             )
 
@@ -545,18 +580,30 @@ Respond ONLY with valid JSON and in {respond_language}."""
                 }
 
             data = response.json()
-            content = data.get('choices', [{}])[0].get('message', {}).get('content', '')
-            json_match = re.search(r'\{[\s\S]*\}', content)
-            if json_match:
-                result = json.loads(json_match.group())
-                score = min(max(float(result['score']), 0.0), 1.0)
-                return {
-                    "available": True,
-                    "score": score,
-                    "analysis": result.get('reasoning', content),
-                    "red_flags": result.get('red_flags', [])
-                }
-            return {"available": False, "error": "Groq returned no valid score"}
+            choices = data.get("choices")
+            if not isinstance(choices, list) or not choices:
+                return {"available": False, "error": "Groq returned no completion choices"}
+            message = choices[0].get("message", {})
+            content = message.get("content")
+            if not isinstance(content, str) or not content.strip():
+                return {"available": False, "error": "Groq returned an empty assessment"}
+
+            result = json.loads(content)
+            raw_score = result.get("score") if isinstance(result, dict) else None
+            if isinstance(raw_score, bool) or not isinstance(raw_score, (int, float)):
+                return {"available": False, "error": "Groq assessment is missing a numeric score"}
+            if not 0 <= raw_score <= 1:
+                return {"available": False, "error": "Groq assessment score is outside the 0.0 to 1.0 range"}
+
+            return {
+                "available": True,
+                "score": float(raw_score),
+                "analysis": result.get("reasoning", ""),
+                "red_flags": result.get("red_flags", [])
+            }
+    except json.JSONDecodeError as e:
+        print(f"Groq analysis error: {e}")
+        return {"available": False, "error": "Groq returned malformed JSON"}
     except Exception as e:
         print(f"Groq analysis error: {e}")
         return {"available": False, "error": f"Groq analysis error: {e}"}
@@ -573,69 +620,58 @@ async def verify_with_web_search(text: str, language: str = "en") -> dict:
         # Remove special characters for cleaner search
         search_query = re.sub(r'[^\w\s]', ' ', search_query).strip()
 
-        async with httpx.AsyncClient(timeout=15) as client:
-            # DuckDuckGo search
-            try:
-                ddg_response = await client.get(
-                    "https://html.duckduckgo.com/html/",
-                    params={"q": search_query},
-                    headers={"User-Agent": "Mozilla/5.0 (compatible; VerifyIt/2.0)"}
-                )
+        async with httpx.AsyncClient(timeout=8) as client:
+            ddg_task = client.get(
+                "https://html.duckduckgo.com/html/",
+                params={"q": search_query},
+                headers={"User-Agent": "Mozilla/5.0 (compatible; VerifyIt/2.0)"}
+            )
 
-                if ddg_response.status_code == 200:
-                    # Extract result titles and URLs from HTML
-                    titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', ddg_response.text)
-                    urls = re.findall(r'class="result__url"[^>]*>(.*?)</a>', ddg_response.text)
+            google_lang = "en-NG"
+            rss_task = client.get(
+                "https://news.google.com/rss/search",
+                params={"q": f"{search_query} Nigeria", "hl": google_lang, "gl": "NG", "ceid": "NG:en"},
+                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"},
+                follow_redirects=True
+            )
+            search_results = await asyncio.gather(ddg_task, rss_task, return_exceptions=True)
 
-                    for i, (title, url) in enumerate(zip(titles[:5], urls[:5])):
-                        clean_title = re.sub(r'<[^>]+>', '', title).strip()
-                        clean_url = url.strip()
-                        if clean_title:
-                            is_trusted = any(ts in clean_url.lower() for ts in TRUSTED_SOURCES)
-                            sources.append({
-                                "title": clean_title,
-                                "url": f"https://{clean_url}" if clean_url and not clean_url.startswith('http') else clean_url,
-                                "trusted": is_trusted
-                            })
-            except Exception as e:
-                print(f"DuckDuckGo search error: {e}")
+            ddg_response, rss_response = search_results
+            if isinstance(ddg_response, Exception):
+                print(f"DuckDuckGo search error: {ddg_response}")
+            elif ddg_response.status_code == 200:
+                titles = re.findall(r'class="result__a"[^>]*>(.*?)</a>', ddg_response.text)
+                urls = re.findall(r'class="result__url"[^>]*>(.*?)</a>', ddg_response.text)
 
-            # Google News RSS - Nigeria focused
-            try:
-                google_lang = "en-NG"
-                if language == 'yo':
-                    google_lang = 'en-NG'
-                elif language == 'ha':
-                    google_lang = 'en-NG'
-                elif language == 'ig':
-                    google_lang = 'en-NG'
+                for title, url in zip(titles[:5], urls[:5]):
+                    clean_title = re.sub(r'<[^>]+>', '', title).strip()
+                    clean_url = url.strip()
+                    if clean_title:
+                        is_trusted = any(ts in clean_url.lower() for ts in TRUSTED_SOURCES)
+                        sources.append({
+                            "title": clean_title,
+                            "url": f"https://{clean_url}" if clean_url and not clean_url.startswith('http') else clean_url,
+                            "trusted": is_trusted
+                        })
 
-                rss_response = await client.get(
-                    "https://news.google.com/rss/search",
-                    params={"q": f"{search_query} Nigeria", "hl": google_lang, "gl": "NG", "ceid": "NG:en"},
-                    headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"},
-                    follow_redirects=True
-                )
+            if isinstance(rss_response, Exception):
+                print(f"Google News RSS error: {rss_response}")
+            elif rss_response.status_code == 200:
+                import xml.etree.ElementTree as ET
+                root = ET.fromstring(rss_response.text)
+                items = root.findall('.//item')[:5]
 
-                if rss_response.status_code == 200:
-                    # Parse RSS items
-                    import xml.etree.ElementTree as ET
-                    root = ET.fromstring(rss_response.text)
-                    items = root.findall('.//item')[:5]
-
-                    for item in items:
-                        title_el = item.find('title')
-                        link_el = item.find('link')
-                        if title_el is not None and title_el.text:
-                            link = link_el.text if link_el is not None else ''
-                            is_trusted = any(ts in link.lower() for ts in TRUSTED_SOURCES)
-                            sources.append({
-                                "title": title_el.text,
-                                "url": link,
-                                "trusted": is_trusted
-                            })
-            except Exception as e:
-                print(f"Google News RSS error: {e}")
+                for item in items:
+                    title_el = item.find('title')
+                    link_el = item.find('link')
+                    if title_el is not None and title_el.text:
+                        link = link_el.text if link_el is not None else ''
+                        is_trusted = any(ts in link.lower() for ts in TRUSTED_SOURCES)
+                        sources.append({
+                            "title": title_el.text,
+                            "url": link,
+                            "trusted": is_trusted
+                        })
 
         # Calculate web score based on trusted source matches
         if sources:

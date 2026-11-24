@@ -111,7 +111,11 @@ python -c "from transformers import AutoTokenizer, AutoModelForSequenceClassific
 
 Copy `.env.example` to `.env` in the project root and add your Groq API key and
 one or more Gemini API keys. Separate multiple Gemini keys with commas. The
-default Groq and Gemini model IDs are configured there.
+default Groq and Gemini model IDs are configured there. Add a Hugging Face
+token with Inference Providers permission as `HUGGINGFACE_API_TOKEN` to enable
+BERT analysis. Without it, verification continues with the other available
+providers. When deployed on Render, add these values in the service's
+Environment settings; the local `.env` file is not deployed.
 
 To enable password resets, configure the SMTP host, port, username, password,
 sender email, and frontend URL in `.env` (and in your hosting provider's

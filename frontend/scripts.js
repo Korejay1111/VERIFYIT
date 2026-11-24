@@ -1682,7 +1682,9 @@ async function verifyText() {
     const message = error.message || 'Unknown error';
     const hint = message.includes('Not authenticated')
       ? 'Please log in first to verify content.'
-      : 'Please ensure the backend server is running.';
+      : message.includes('Verification unavailable:')
+        ? 'The verification API is online, but its analysis providers are unavailable. Check the provider configuration.'
+        : 'Please ensure the backend server is running.';
     resultsDiv.innerHTML = `
       <div class="loading-overlay">
         <div style="font-size: 2rem; margin-bottom: 0.5rem;">❌</div>
@@ -1764,7 +1766,9 @@ async function verifyUrl() {
     const message = error.message || 'Unknown error';
     const hint = message.includes('Not authenticated')
       ? 'Please log in first to verify content.'
-      : 'Please check the URL and ensure the backend server is running.';
+      : message.includes('Verification unavailable:')
+        ? 'The verification API is online, but its analysis providers are unavailable. Check the provider configuration.'
+        : 'Please check the URL and ensure the backend server is running.';
     resultsDiv.innerHTML = `
       <div class="loading-overlay">
         <div style="font-size: 2rem; margin-bottom: 0.5rem;">❌</div>
@@ -1845,9 +1849,11 @@ async function verifyImage() {
     const message = error.message || 'Unknown error';
     const hint = message.includes('Not authenticated')
       ? 'Please log in first to verify content.'
-      : error instanceof TypeError
-        ? 'Could not reach the verification API. Check the API address and backend availability.'
-        : 'The verification API returned an error. See the details below.';
+      : message.includes('Image verification unavailable:')
+        ? 'The verification API is online, but its analysis providers are unavailable. Check the provider configuration.'
+        : error instanceof TypeError
+          ? 'Could not reach the verification API. Check the API address and backend availability.'
+          : 'The verification API returned an error. See the details below.';
     resultsDiv.innerHTML = `
       <div class="loading-overlay">
         <div style="font-size: 2rem; margin-bottom: 0.5rem;">❌</div>
