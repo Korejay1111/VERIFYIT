@@ -1508,13 +1508,13 @@ async def check_text(request: TextRequest, current_user: User = Depends(get_curr
         analyze_with_bert(text),
         {"available": False, "error": "BERT analysis timed out"},
         "BERT",
-        12
+        25
     )
     groq_task = safe_model_call(
         analyze_with_groq(text, request.language),
         {"available": False, "error": "Groq analysis timed out"},
         "Groq",
-        15
+        25
     )
     web_task = safe_model_call(
         verify_with_web_search(text, request.language),
@@ -1618,13 +1618,13 @@ async def check_image(request: ImageRequest, current_user: User = Depends(get_cu
             analyze_with_bert(extracted_text),
             {"available": False, "error": "BERT analysis timed out"},
             "BERT",
-            12
+            25
         )
         groq_task = safe_model_call(
             analyze_with_groq(extracted_text, request.language),
             {"available": False, "error": "Groq analysis timed out", "red_flags": []},
             "Groq",
-            15
+            25
         )
         web_task = safe_model_call(
             verify_with_web_search(extracted_text, request.language),
@@ -1809,13 +1809,13 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
         analyze_with_bert(full_text),
         {"available": False, "error": "BERT analysis timed out"},
         "BERT",
-        12
+        25
     )
     groq_task = safe_model_call(
         analyze_with_groq(full_text, request.language),
         {"available": False, "error": "Groq analysis timed out"},
         "Groq",
-        15
+        25
     )
     web_task = safe_model_call(
         verify_with_web_search(full_text, request.language),
@@ -1887,70 +1887,121 @@ async def check_url(request: UrlRequest, current_user: User = Depends(get_curren
 
 @app.get("/trending-news")
 async def trending_news(category: str = "all"):
-    """Fetch trending news from Google News RSS."""
-    try:
-        import xml.etree.ElementTree as ET
+    """Fetch Nigeria-focused headlines, with local publisher feeds as fallback."""
+    import xml.etree.ElementTree as ET
 
-        # Google News RSS feeds by category
-        gn_feeds = {
-            "all": "https://news.google.com/rss?hl=en-NG&gl=NG&ceid=NG:en",
-            "politics": "https://news.google.com/news/rss/headlines/section/topic/NATION?hl=en-NG&gl=NG&ceid=NG:en",
-            "business": "https://news.google.com/news/rss/headlines/section/topic/BUSINESS?hl=en-NG&gl=NG&ceid=NG:en",
-            "sports": "https://news.google.com/news/rss/headlines/section/topic/SPORTS?hl=en-NG&gl=NG&ceid=NG:en",
-            "entertainment": "https://news.google.com/news/rss/headlines/section/topic/ENTERTAINMENT?hl=en-NG&gl=NG&ceid=NG:en",
-            "health": "https://news.google.com/news/rss/headlines/section/topic/HEALTH?hl=en-NG&gl=NG&ceid=NG:en",
-            "technology": "https://news.google.com/news/rss/headlines/section/topic/TECHNOLOGY?hl=en-NG&gl=NG&ceid=NG:en"
-        }
+    category_queries = {
+        "all": "Nigeria news",
+        "politics": "Nigeria politics",
+        "technology": "Nigeria technology",
+        "health": "Nigeria health",
+        "science": "Nigeria science",
+        "business": "Nigeria business",
+        "sports": "Nigeria sports",
+        "entertainment": "Nigeria entertainment"
+    }
+    category = category.lower()
+    query = category_queries.get(category, category_queries["all"])
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; VerifyIt/2.0)"}
+    feeds = [
+        ("https://news.google.com/rss/search", {
+            "q": query, "hl": "en-NG", "gl": "NG", "ceid": "NG:en"
+        }),
+        ("https://www.premiumtimesng.com/feed", None),
+        ("https://www.channelstv.com/feed/", None)
+    ]
 
-        # Default to general feed if category not found
-        feed_url = gn_feeds.get(category, gn_feeds["all"])
+    async with httpx.AsyncClient(timeout=8, follow_redirects=True) as client:
+        responses = await asyncio.gather(
+            *(client.get(url, params=params, headers=headers) for url, params in feeds),
+            return_exceptions=True
+        )
 
-        async with httpx.AsyncClient(timeout=15, follow_redirects=True) as client:
-            response = await client.get(
-                feed_url,
-                headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
-            )
+    articles = []
+    feed_errors = []
+    publisher_articles = []
+    for (feed_url, _), response in zip(feeds, responses):
+        if isinstance(response, Exception):
+            feed_errors.append(f"{feed_url}: {response}")
+            continue
+        if response.status_code != 200:
+            feed_errors.append(f"{feed_url}: HTTP {response.status_code}")
+            continue
 
-            if response.status_code != 200:
-                return {"articles": []}
-
+        try:
             root = ET.fromstring(response.text)
-            items = root.findall('.//item')[:20]
+        except ET.ParseError as exc:
+            feed_errors.append(f"{feed_url}: invalid RSS response ({exc})")
+            continue
 
-            articles = []
-            for item in items:
-                title_el = item.find('title')
-                link_el = item.find('link')
-                pub_date_el = item.find('pubDate')
-                description_el = item.find('description')
-                source_el = item.find('source')
+        for item in root.findall(".//item"):
+            title_el = item.find("title")
+            if title_el is None or not title_el.text:
+                continue
+            description_el = item.find("description")
+            source_el = item.find("source")
+            if source_el is not None and source_el.text:
+                source = source_el.text
+            elif "premiumtimesng.com" in feed_url:
+                source = "Premium Times"
+            elif "channelstv.com" in feed_url:
+                source = "Channels Television"
+            else:
+                source = "News Source"
+            description = ""
+            if description_el is not None and description_el.text:
+                description = re.sub(r"<[^>]+>", "", description_el.text).strip()
+            article = {
+                "title": title_el.text,
+                "link": item.findtext("link") or "",
+                "published": item.findtext("pubDate") or "",
+                "source": source,
+                "description": description,
+                "category": category
+            }
+            if feed_url == feeds[0][0]:
+                articles.append(article)
+            else:
+                publisher_articles.append(article)
 
-                if title_el is not None and title_el.text:
-                    # Extract description text (remove HTML tags if present)
-                    description = ""
-                    if description_el is not None and description_el.text:
-                        import re
-                        description = re.sub(r'<[^>]+>', '', description_el.text).strip()
-                        
-                    # Extract source if available
-                    source_name = "News Source"
-                    if source_el is not None and source_el.text:
-                        source_name = source_el.text
+    if not articles:
+        category_terms = {
+            "politics": ("politic", "election", "government", "senate", "president"),
+            "technology": ("technology", "tech", "digital", "internet", "software"),
+            "health": ("health", "hospital", "medical", "disease", "doctor"),
+            "science": ("science", "research", "climate", "space", "environment"),
+            "business": ("business", "economy", "market", "bank", "company"),
+            "sports": ("sport", "football", "team", "match", "league"),
+            "entertainment": ("entertainment", "music", "film", "movie", "celebrity")
+        }
+        terms = category_terms.get(category)
+        articles = [
+            article for article in publisher_articles
+            if not terms or any(
+                term in f"{article['title']} {article['description']}".lower()
+                for term in terms
+            )
+        ]
 
-                    articles.append({
-                        "title": title_el.text,
-                        "link": link_el.text if link_el is not None else '',
-                        "published": pub_date_el.text if pub_date_el is not None else '',
-                        "source": source_name,
-                        "description": description,
-                        "category": category
-                    })
+    if not articles and feed_errors:
+        raise HTTPException(
+            status_code=502,
+            detail=f"Trending news sources are unavailable: {'; '.join(feed_errors)}"
+        )
 
-            return {"articles": articles}
+    seen_links = set()
+    unique_articles = []
+    for article in articles:
+        link = article["link"]
+        if link and link in seen_links:
+            continue
+        if link:
+            seen_links.add(link)
+        unique_articles.append(article)
+        if len(unique_articles) == 20:
+            break
 
-    except Exception as e:
-        print(f"Trending news error: {e}")
-        return {"articles": []}
+    return {"articles": unique_articles}
 
 @app.post("/report")
 async def report_content(request: ReportRequest, current_user: User = Depends(get_current_user)):

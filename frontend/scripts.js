@@ -516,7 +516,7 @@ const translations = {
     category_business: 'Business',
     loading_news: 'Loading trending news...',
     news_empty: 'No trending news found for this category.',
-    news_error: 'Could not load trending news. Please ensure the backend server is running.',
+    news_error: 'Trending news is temporarily unavailable from the news feeds.',
     quiz_close: 'Close',
     quiz_question_progress: 'Question {current} of {total}',
     quiz_score_label: 'Score',
@@ -652,7 +652,7 @@ feedback_required: 'Please provide your name and feedback.',
     category_business: 'Òwò',
     loading_news: 'Ń gbé ìròyìn tó ń gbajú wá...',
     news_empty: 'A kò rí ìròyìn tó ń gbajú fún ẹ̀ka yìí.',
-    news_error: 'A kò lè gbé ìròyìn wá. Jọ̀wọ́ ṣàyẹ̀wò pé olupin backend ń ṣiṣẹ́.',
+    news_error: 'A kò lè rí ìròyìn láti àwọn orísun ìròyìn báyìí.',
     quiz_close: 'Pade',
     quiz_question_progress: 'Ìbéèrè {current} nínú {total}',
     quiz_score_label: 'Àmì',
@@ -823,7 +823,7 @@ feedback_required: 'Jọ̀wọ́ tẹ orúkọ rẹ àti èrò rẹ sílẹ̀.',
     category_business: 'Kasuwanci',
     loading_news: 'Ana loda labarai masu yaduwa...',
     news_empty: 'Ba a sami labarai masu yaduwa a wannan rukuni ba.',
-    news_error: 'Ba a iya loda labarai ba. Da fatan tabbatar da cewa uwar garken backend tana aiki.',
+    news_error: 'Ba a samu labarai daga majiyoyin labarai a yanzu ba.',
     quiz_close: 'Rufe',
     quiz_question_progress: 'Tambaya {current} cikin {total}',
     quiz_score_label: 'Maki',
@@ -997,7 +997,7 @@ feedback_required: 'Jọ̀wọ́ tẹ orúkọ rẹ àti èrò rẹ sílẹ̀.',
     category_business: 'Azụmahịa',
     loading_news: 'A na-ebudata akụkọ ndị a ma ama...',
     news_empty: 'Achọtaghị akụkọ na-ewu ewu maka ụdị a.',
-    news_error: 'Enweghị ike ibudata akụkọ. Biko hụ na sava backend na-arụ ọrụ.',
+    news_error: 'Enweghị ike nweta akụkọ ugbu a site na ebe akụkọ.',
     quiz_close: 'Mechie',
     quiz_question_progress: 'Ajụjụ {current} n’ime {total}',
     quiz_score_label: 'Akara',
@@ -2283,6 +2283,7 @@ async function loadTrendingNews(category = 'all') {
       <div class="empty-state" style="grid-column: 1 / -1;">
         <div class="empty-icon">⚠️</div>
         <p>${getTranslation('news_error')}</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(error.message || '')}</p>
       </div>
     `;
   }
